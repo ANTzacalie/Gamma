@@ -82,13 +82,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/userSettings">
 
-        <LinearLayout
-            android:id="@+id/cardsLayout"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/gri30"
             android:orientation="vertical">
 
-        </LinearLayout>
+            <LinearLayout
+                android:id="@+id/cardsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>
 
@@ -124,7 +136,7 @@
             tools:ignore="LabelFor,TextFields" />
 
         <ImageButton
-            android:id="@+id/imageVideoDocumentLoader"
+            android:id="@+id/addFiles"
             style="@style/Widget.AppCompat.ImageButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
