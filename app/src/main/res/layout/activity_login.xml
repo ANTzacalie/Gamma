@@ -5,85 +5,74 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
-    tools:context=".LoginActivity">
+    android:background="@color/black">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
-        android:layout_width="251dp"
-        android:layout_height="300dp"
-        android:layout_marginStart="80dp"
-        android:layout_marginTop="60dp"
-        android:layout_marginEnd="80dp"
-        android:layout_marginBottom="321dp"
+        android:layout_width="331dp"
+        android:layout_height="330dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="241dp"
         android:background="@drawable/round_shape"
         android:backgroundTint="@color/white"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2">
+        app:layout_constraintStart_toStartOf="parent">
 
         <EditText
             android:id="@+id/emailText"
-            android:layout_width="225dp"
+            android:layout_width="301dp"
             android:layout_height="50dp"
-            android:layout_marginStart="13dp"
-            android:layout_marginTop="60dp"
-            android:layout_marginEnd="13dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="@color/black"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="10dp"
+            android:autofillHints=""
+            android:backgroundTint="@color/black"
             android:hint="@string/email"
             android:inputType="textEmailAddress"
+            android:textColor="@color/black"
             android:textColorHint="@color/black"
-            android:backgroundTint="@color/black"
             app:layout_constraintBottom_toTopOf="@+id/passwordText"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:autofillHints="" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
             android:id="@+id/passwordText"
-            android:layout_width="225dp"
+            android:layout_width="301dp"
             android:layout_height="50dp"
-            android:layout_marginStart="13dp"
-            android:layout_marginEnd="13dp"
-            android:textColor="@color/black"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:autofillHints=""
+            android:backgroundTint="@color/black"
             android:hint="@string/password"
             android:inputType="textPassword"
+            android:textColor="@color/black"
             android:textColorHint="@color/black"
-            android:backgroundTint="@color/black"
             app:layout_constraintBottom_toTopOf="@+id/errorText"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/emailText"
-            android:autofillHints="" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <Button
             android:id="@+id/proceedLogin"
-            android:layout_width="200dp"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="81dp"
-            android:layout_marginTop="11dp"
             android:layout_marginEnd="-30dp"
+            android:layout_marginBottom="10dp"
             android:backgroundTint="@color/black"
             android:text="@string/login"
             android:textColor="@color/white"
             app:layout_constraintBottom_toTopOf="@+id/changePassword"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/errorText" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/changePassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="35dp"
-            android:layout_marginTop="15dp"
             android:layout_marginEnd="110dp"
             android:layout_marginBottom="20dp"
             android:clickable="true"
@@ -91,22 +80,52 @@
             android:textColor="@color/coralColor"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/proceedLogin" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
             android:id="@+id/errorText"
-            android:layout_width="150dp"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="88dp"
-            android:layout_marginEnd="13dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="20dp"
             android:textColor="@color/coralColor"
             app:layout_constraintBottom_toTopOf="@+id/proceedLogin"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/getBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="23dp"
+            app:cardBackgroundColor="@color/green"
+            app:cardCornerRadius="30dp"
+            app:layout_constraintBottom_toTopOf="@+id/emailText"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/passwordText" /> <!-- redenumeste naibi custom button color la coral orange!-->
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginTop="11dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginBottom="11dp"
+                    android:text="@string/b"
+                    android:textColor="@color/white"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -120,10 +139,21 @@
         android:text="@string/amma"
         android:textColor="@color/white"
         android:textSize="40sp"
-        app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <RelativeLayout
+        android:id="@+id/relativeLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".RegisterActivity">
+
+        <FrameLayout
+            android:id="@+id/fragmentLogin"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -40,26 +40,6 @@
         </activity>
 
         <activity
-            android:name=".ChangePasswordActivity"
-            android:exported="true">
-
-            <intent-filter>
-                <action android:name="ChangePasswordActivity" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".LoginActivity"
-            android:exported="true">
-
-            <intent-filter>
-                <action android:name="LoginActivity" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <activity
             android:name=".UserActivity"
             android:exported="true">
 
@@ -68,28 +48,6 @@
                 <action android:name="InterfaceActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".AccountCreatedActivity"
-            android:exported="true">
-
-            <intent-filter>
-                <action android:name="AccountCreatedActivity" />
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".CodeVerificationActivity"
-            android:exported="true">
-
-            <intent-filter>
-                <action android:name="CodeVerificationActivity" />
-
-                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 

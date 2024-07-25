@@ -176,86 +176,6 @@ class Standby() {
 
 }
 
-// keystore class
-class AndroidLocalStorage(private val context: Context) {
-
-    private val masterKeyAlias = MasterKey.Builder(context).setKeyGenParameterSpec(MasterKeys.AES256_GCM_SPEC).build()
-
-    fun saveESUI(email: String, serverAccessCode: String, username : String, id : String ) {
-        Log.d("LOCAL STORAGE","SAVE ESUI USED")
-
-        val sharedPreferences = EncryptedSharedPreferences.create(
-            context,
-            "appPrefs",
-            masterKeyAlias,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-
-        sharedPreferences.edit()
-            .putString("email", email)
-            .putString("serverAccessCode", serverAccessCode)
-            .putString("username" , username)
-            .putString("id",id)
-            .apply()
-
-    }
-
-    fun getEmail(): String? {
-
-        val sharedPreferences = EncryptedSharedPreferences.create(
-            context,
-            "appPrefs",
-            masterKeyAlias,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-
-        return sharedPreferences.getString("email", null)
-
-    }
-
-    fun getSecureCode(): String? {
-
-        val sharedPreferences = EncryptedSharedPreferences.create(
-            context,
-            "appPrefs",
-            masterKeyAlias,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-
-        return sharedPreferences.getString("serverAccessCode", null)
-
-    }
-    fun getUsername(): String? {
-
-        val sharedPreferences = EncryptedSharedPreferences.create(
-            context,
-            "appPrefs",
-            masterKeyAlias,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-
-        return sharedPreferences.getString("username", null)
-
-    }
-
-    fun getId(): String? {
-
-        val sharedPreferences = EncryptedSharedPreferences.create(
-            context,
-            "appPrefs",
-            masterKeyAlias,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-        return sharedPreferences.getString("id", null)
-
-    }
-
-}
 
 class Https() {
 
@@ -334,7 +254,7 @@ class Https() {
                 val jsonObject = JSONObject(responseData)
 
                 localUsername = jsonObject.getString("username")
-                localId = jsonObject.getString("id") // Replace "id" with the actual key
+                localId = jsonObject.getString("id")
                 Log.d("HTTPS FUN1" , "ID: $localId , USERNAME: $localUsername")
 
             }
@@ -530,7 +450,7 @@ class UserActivityChild(): AppCompatActivity() {
         //val image: ImageView = card.findViewById(R.id.cardImage) //in image vom adauga src imagiea de profil a prietenului , vedem cum o adaugam (unde stocam imaginea in prima faza!)
         settingsInterface.findViewById<TextView>(R.id.usernameDisplayText).text = sUsername
 
-        //luam din db statusul fiecarui switch de mai jos *****
+        //luam din db statusul fiecarui switch de mai jos
         val blockState = db.getBlockState(sUser)
         val blockSwitch: MaterialSwitch = settingsInterface.findViewById(R.id.switchBlock)
         if(blockState == 0) {
@@ -546,7 +466,7 @@ class UserActivityChild(): AppCompatActivity() {
         }else {
             notifySwitch.isChecked = true
         }
-        //*****
+
 
         blockSwitch.setOnCheckedChangeListener { _, isChecked ->
 

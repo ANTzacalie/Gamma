@@ -62,4 +62,7 @@
     <string name="new_password">New Password</string>
     <string name="somedate">SomeDate</string>
     <string name="sometext">SomeText</string>
+    <string name="back">BACK</string>
+    <string name="b">B</string>
+    <string name="groups">Groups</string>
 </resources>

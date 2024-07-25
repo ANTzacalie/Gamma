@@ -1,3 +1,5 @@
+@file:Suppress("OVERRIDE_DEPRECATION")
+
 package com.mca.gamma
 import android.annotation.SuppressLint
 import android.app.Application
@@ -9,6 +11,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -17,11 +20,10 @@ import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 import kotlin.concurrent.thread
 
-/*
-MASTER COMMENT:
---> LA SFARSIT < CAND TERMINAM APLICATIA , VOM AVEA TOATE COMMENTURILE IN ENGLEZA
---> PUTEM SCHIMBA LAYOUTUL IN ACTIVITATE cu setContentView de cate ori vrem , acu atunci cand o facem toata logica noului layout trebuie pusa in runOnUiThread{}
-    -- PUTEM FACE REGISTER/LOGIN MAI SMOOTH!
+/* TODO:
+    MASTER COMMENT:
+    --> LA SFARSIT < CAND TERMINAM APLICATIA , VOM AVEA TOATE COMMENTURILE IN ENGLEZA! >
+    --> PUTEM SCHIMBA LAYOUTUL IN ACTIVITATE cu setContentView de cate ori vrem , acu atunci cand o facem toata logica noului layout trebuie pusa in runOnUiThread{}
 */
 
 //masterActivity , inceputul aplicatie si a initializarilor
@@ -45,7 +47,7 @@ class MasterActivity : Application() {
         //verificam daca userul este conectat si initializam transmission si coroutineA
         if(!serverAccessCode.isNullOrEmpty()) { Transmission.start(); coroutineA.start(); permitActivityAfterLogin = false }
 
-        Log.d("LOCAL USER:" , "$localUserEmail + $localUsername + $localId + $serverAccessCode")
+        Log.d("APP" , "LOCAL USER CONNECTED , EMAIL: $localUserEmail + USERNAME: $localUsername + ID: $localId + SAC: $serverAccessCode")
     }
 
     private val coroutineA = CoroutineScope(Dispatchers.Main).launch {
@@ -80,6 +82,7 @@ class MasterActivity : Application() {
             Transmission.imOnline(userEmail[i][0])
             i++
         }
+
         Log.d("COROUTINE_A" , "END")
     }
 
@@ -92,20 +95,15 @@ class InitActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //main ui
-        val intent1 = Intent("MainActivity")
-        //register ui
-        val intent2 = Intent("RegisterActivity")
-
         //aici verificam daca userul este conectat sau nu
         if(!permitActivityAfterLogin) {
 
-            startActivity(intent1); Log.d("INIT_ACTIVITY" ,"ACTIVITY_MAIN")
+            startActivity(Intent("MainActivity")); Log.d("INIT_ACTIVITY" ,"ACTIVITY_MAIN")
 
         }
         else {
 
-            startActivity(intent2); Log.d("INIT_ACTIVITY" ,"ACTIVITY_REGISTER")
+            startActivity(Intent("RegisterActivity")); Log.d("INIT_ACTIVITY" ,"ACTIVITY_REGISTER")
 
         }
 
@@ -114,7 +112,7 @@ class InitActivity: AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        //SO THE APP IS NOT GONNA GET HERE BY MISTAKE
+        //ALWAYS DESTROYED ON STOP
         finish()
 
     }
@@ -126,8 +124,7 @@ class InitActivity: AppCompatActivity() {
 //register class, aici se face inregistrarea userului in db a serverului
 class RegisterActivity : AppCompatActivity() {
 
-    private var isExit = false
-
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register_account)
@@ -142,9 +139,6 @@ class RegisterActivity : AppCompatActivity() {
         val errorTextOutput : TextView = findViewById(R.id.errorText)
         var serverResponse : String
 
-        val intent2 = Intent("LoginActivity")
-        val intent3 = Intent("AccountCreatedActivity")
-
         buttonA.setOnClickListener {
 
             if (permitObjInternetAcess) {
@@ -153,7 +147,7 @@ class RegisterActivity : AppCompatActivity() {
                 buttonA.isEnabled = false
 
                 //verificam daca datele introduse respecta condiitiile
-                if(inputUsername.length() > 3 && inputUsername.length() <= 30 && inputEmail.length() >= 5 && inputPassword.length() >= 8 && inputPassword.length() <= 50 && '@' in inputEmail.text.toString()) {
+                if(inputUsername.length() in 4..30 && inputEmail.length() >= 5 && inputPassword.length() >= 8 && inputPassword.length() <= 50 && '@' in inputEmail.text.toString()) {
 
                     //am folosit thread pentru ca functiile HTTPS dureaza , iar limbajul este asincron , inauntrul thread este normal (linear)
                     thread {
@@ -165,10 +159,15 @@ class RegisterActivity : AppCompatActivity() {
 
                              when (serverResponse) {
 
-                                 "true" -> {
+                                 "true" ->  {
 
-                                     isExit = true
-                                     startActivity(intent3)
+                                     if(savedInstanceState == null) {
+
+                                         supportFragmentManager.beginTransaction()
+                                             .replace(R.id.fragmentRegister, AccountCreatedActivity(applicationContext))
+                                             .commitNow()
+
+                                     }
 
                                  }
                                  "false" -> {
@@ -177,7 +176,7 @@ class RegisterActivity : AppCompatActivity() {
                                      buttonA.isEnabled = true
 
                                      //asta se afisaza daca in server accountul exista
-                                     errorTextOutput.text = "ACCOUNT ALREADY EXISTS!"
+                                     errorTextOutput.text = "ERROR CREATING ACCOUNT!"
 
                                  }
                                  "FAILED" -> {
@@ -229,14 +228,14 @@ class RegisterActivity : AppCompatActivity() {
 
                     } else if('@' !in inputEmail.toString()) {
 
-                        errorTextOutput.text = "INCORRECT EMAIL , SHOULD CONTAIN CARACTER '@'"
+                        errorTextOutput.text = "INCORRECT EMAIL , SHOULD CONTAIN CHARACTER '@'"
 
                         //redeschidem actiunea butonului pentru user
                         buttonA.isEnabled = true
 
                     } else if(inputUsername.length() > 30) {
 
-                        errorTextOutput.text = "USERNAME TOO LONG , MUST BE UNDER 30 CARACTERS"
+                        errorTextOutput.text = "USERNAME TOO LONG , MUST BE UNDER 30 CHARACTERS"
 
                         //redeschidem actiunea butonului pentru user
                         buttonA.isEnabled = true
@@ -246,7 +245,7 @@ class RegisterActivity : AppCompatActivity() {
 
             } else {
 
-                errorTextOutput.text = "CONNECTION LOST"
+                errorTextOutput.text = "INTERNET CONNECTION LOST"
 
             }
 
@@ -256,18 +255,17 @@ class RegisterActivity : AppCompatActivity() {
 
             if(permitObjInternetAcess) {
 
-               startActivity(intent2)
+                if(savedInstanceState == null) {
+
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentRegister, LoginActivity(applicationContext))
+                        .commitNow()
+
+                }
 
             }
 
         }
-
-    }
-
-    override fun onStop() {
-        super.onStop()
-
-        if(isExit) { finish() }
 
     }
 
@@ -285,7 +283,7 @@ class UserActivity : AppCompatActivity() {
         window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
         
         val sendMessageButton: ImageButton = findViewById(R.id.sendMessage)
-        val loadFileButton: ImageButton = findViewById(R.id.cardImage) //asta cand vom adauga file support(mai mult info in MasterVar)
+        val loadProfileIcon: ImageView = findViewById(R.id.cardImage) //asta cand vom adauga file support(mai mult info in MasterVar)
         val userSettingsButton: LinearLayout = findViewById(R.id.userSettings)
         val inputText: EditText = findViewById(R.id.messageText)
         val usernameTextView: TextView = findViewById(R.id.usernameDisplayText)
@@ -371,7 +369,7 @@ class MainActivity: AppCompatActivity() {
         //verificam daca userul este conectat pentru prima data , ca sa deschidem transmission!
         userOnFirstConnect()
 
-        //classLinearLayout si constraintLayout sunt globale doar aici in classa
+        //cardLinearLayout si constraintLayout
         val cardLinearLayout: LinearLayout = findViewById(R.id.cardLinearLayoutMain)
         val constraintLayout: ConstraintLayout = findViewById(R.id.constraintLayout)
 
@@ -399,7 +397,6 @@ class MainActivity: AppCompatActivity() {
         permitObjMain = true
 
     }
-
 
     override fun onStop() {
         super.onStop()
@@ -438,6 +435,81 @@ class MainActivity: AppCompatActivity() {
 }
 
 
+
+//ConnUI
+class ConnActivity: AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_conn_ui)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.black)
+        window.navigationBarColor = ContextCompat.getColor(this, R.color.gri30)
+
+        //val intent1 = Intent("com.example.ACTION_AC6") //buton de inapoi de inplementat in colt sus!!!
+        val buttonA: Button = findViewById(R.id.sendConnRequest)
+        val inputConnRequest: EditText = findViewById(R.id.inputConnRequest)
+
+        //linearLayoutul si constraint layoutul pentru toata clasa
+        val cardLinearLayout: LinearLayout = findViewById(R.id.cardLinearLayoutConn)
+        val constraintLayout: ConstraintLayout = findViewById(R.id.connConstraintLayout)
+
+        //dam constraint layoutul obiectuil, pentru a functiona live friend request
+        Transmission.addConstraint(constraintLayout)
+
+        //adaugam in obiect cand intram in activitate , ca sa putem afisa pe interfata
+        Transmission.addLayout(cardLinearLayout)
+
+        //deschidem o instanta DB
+        val db = MasterDb(applicationContext)
+
+        //stocam in connArray toate CONN requesturile externe
+        val connArray = db.connLoader(); Log.d("CREATE_CONN", "LOADER")
+
+        //afisam pe interfata toate conn_requests
+        for(i in 0 until connArray.size step 1) {
+
+            val listA : MutableList<String?> = mutableListOf(connArray[i][0] ,connArray[i][1], connArray[i][2], connArray[i][3] , connArray[i][4], connArray[i][5])
+            CardViews().connUiCard(listA ,cardLinearLayout , applicationContext , constraintLayout)
+
+        }; cardConnBoolean = true
+
+        //permite obiectului Transmission sa faca anumite executi
+        permitObjConn = true
+
+        buttonA.setOnClickListener { //TODO: FA O FUNCTIE
+
+            //extragem textul din textBox
+            val userInput = inputConnRequest.text.toString()
+
+            //aici facem request_conn
+            Transmission.sendRequest(userInput, Random().genRandomCode(12))
+
+            //stergem textul de pe ecranul userului
+            inputConnRequest.text.clear()
+
+        }
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        //permite obiectului Transmission sa faca anumite executi
+        permitObjConn = false
+
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+
+        finish()
+        startActivity(Intent("ConnActivity"))
+
+    }
+
+    fun buttonConn(view: View) { finish() }
+
+}
 
 
 

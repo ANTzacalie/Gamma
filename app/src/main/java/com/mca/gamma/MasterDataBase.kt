@@ -7,6 +7,9 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import androidx.security.crypto.MasterKeys
 import kotlin.Exception
 
 ///////***** status ***** ///////MAP
@@ -15,8 +18,88 @@ import kotlin.Exception
 //---> CONNECTED -> userul a devenit prieten (doar in tabelul prieteni !!!)
 ///////***** status ***** ///////
 
-//BOSS!
-//adauga la fiecare catch(e:Exception){ in log.d(e.message) ca sa stim ce tip de eroare este !
+
+// keystore class
+class AndroidLocalStorage(private val context: Context) {
+
+    private val masterKeyAlias = MasterKey.Builder(context).setKeyGenParameterSpec(MasterKeys.AES256_GCM_SPEC).build()
+
+    fun storeLoginData(email: String?, serverAccessCode: String?, username : String?, id : String?) {
+        Log.d("LOCAL STORAGE","SAVE ESUI USED")
+
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            context,
+            "appPrefs",
+            masterKeyAlias,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+        sharedPreferences.edit()
+            .putString("email", email)
+            .putString("serverAccessCode", serverAccessCode)
+            .putString("username" , username)
+            .putString("id",id)
+            .apply()
+
+    }
+
+    fun getEmail(): String? {
+
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            context,
+            "appPrefs",
+            masterKeyAlias,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+        return sharedPreferences.getString("email", null)
+
+    }
+
+    fun getSecureCode(): String? {
+
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            context,
+            "appPrefs",
+            masterKeyAlias,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+        return sharedPreferences.getString("serverAccessCode", null)
+
+    }
+    fun getUsername(): String? {
+
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            context,
+            "appPrefs",
+            masterKeyAlias,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+        return sharedPreferences.getString("username", null)
+
+    }
+
+    fun getId(): String? {
+
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            context,
+            "appPrefs",
+            masterKeyAlias,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        return sharedPreferences.getString("id", null)
+
+    }
+
+}
+
 
 class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", null, 2) {
 

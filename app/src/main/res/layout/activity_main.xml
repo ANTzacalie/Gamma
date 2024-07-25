@@ -94,7 +94,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:textAllCaps="false"
-                android:text="@string/black_list"
+                android:text="@string/groups"
                 android:onClick="buttonB"
                 android:textColor="@color/white" />
 
@@ -105,7 +105,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:textAllCaps="false"
-                android:text="@string/logs"
+                android:text="@string/black_list"
                 android:onClick="buttonC"
                 android:textColor="@color/white" />
 

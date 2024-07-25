@@ -1,71 +1,70 @@
 package com.mca.gamma
 import android.annotation.SuppressLint
-import android.app.Application
+import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
+import androidx.cardview.widget.CardView
+import androidx.fragment.app.Fragment
 import kotlinx.coroutines.*
-import kotlin.concurrent.thread
-
+import org.jetbrains.annotations.TestOnly
 
 
 //login class , trebuie sa mai modificam interfata + box view , la fel ca register si sa aducem niste improvment in caz de credentiale gresite
-class LoginActivity : AppCompatActivity() {
+class LoginActivity(context: Context) : Fragment(R.layout.activity_login) {
 
-    private var isExit = false
+    private val apiCall = CoroutineScope(Dispatchers.Main)
+    private val appContext = context
 
     @SuppressLint("MissingInflatedId", "SetTextI18n")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
-        window.statusBarColor = ContextCompat.getColor(this, R.color.black)
-        window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val intent = Intent("CodeVerificationActivity")
-        val intent2 = Intent("RegisterActivity")
-        val buttonA : Button = findViewById(R.id.proceedLogin)
-        val inputEmail : EditText = findViewById(R.id.emailText)
-        val inputPassword : EditText = findViewById(R.id.passwordText)
-        val errorTextOutput : TextView = findViewById(R.id.errorText)
-        val buttonB: TextView = findViewById(R.id.changePassword)
+        val login : Button = view.findViewById(R.id.proceedLogin)
+        val inputEmail : EditText = view.findViewById(R.id.emailText)
+        val inputPassword : EditText = view.findViewById(R.id.passwordText)
+        val errorTextOutput : TextView = view.findViewById(R.id.errorText)
+        val changePassword: TextView = view.findViewById(R.id.changePassword)
+        val getBack: CardView = view.findViewById(R.id.getBack)
 
-        buttonA.setOnClickListener {
+        login.setOnClickListener {
 
             if (permitObjInternetAcess) {
 
                 //inchidem actiunea butonului
-                buttonA.isEnabled = false
+                login.isEnabled = false
 
                 //am folosit thread pentru ca functiile HTTPS dureaza , iar limbajul este asincron in interiorul activity
-                thread {
+                apiCall.launch {
 
                     //trimitem datele la server si asteptam raspunusul
-                    Https().httpsFun1(inputEmail.text.toString() , inputPassword.text.toString())
+                    withContext(Dispatchers.IO) {
 
-                    runOnUiThread {
+                        Https().httpsFun1(inputEmail.text.toString(), inputPassword.text.toString())
 
-                        if (localUsername.isNullOrEmpty() && localId.isNullOrEmpty() || localUsername == "FAILED" && localId == "DUCK") {
+                    }
 
-                            // Enable the button again in case of an error / wrong input, nothing is received
-                            errorTextOutput.text = "SERVER ERROR OR INCORECT PASSWORD/EMAIL"
-                            buttonA.isEnabled = true
+                    if (localUsername.isNullOrEmpty() && localId.isNullOrEmpty() || localUsername == "FAILED" && localId == "DUCK") {
 
-                        } else {
+                        // Enable the button again in case of an error / wrong input, nothing is received
+                        errorTextOutput.text = "SERVER ERROR OR INCORRECT PASSWORD/EMAIL"
+                        login.isEnabled = true
 
-                            //daca httpsFun1 este un success atunci inregistram localUserEmail
-                            localUserEmail = inputEmail.text.toString()
-                            isExit = true
-                            startActivity(intent)
+                    } else {
+
+                        //daca httpsFun1 este un success atunci inregistram localUserEmail
+                        localUserEmail = inputEmail.text.toString()
+
+                        if(savedInstanceState == null) {
+
+                            parentFragmentManager.beginTransaction()
+                                .replace(R.id.fragmentLogin, CodeVerificationActivity(appContext))
+                                .addToBackStack(null)
+                                .commit()
 
                         }
 
@@ -76,25 +75,39 @@ class LoginActivity : AppCompatActivity() {
             } else {
 
                 //daca nu exista internet
-                errorTextOutput.text = "CONNECTION LOST"
+                errorTextOutput.text = "INTERNET CONNECTION LOST"
 
             }
 
         }
 
-        buttonB.setOnClickListener {
+        // START CHANGE PASSWORD FRAGMENT
+        changePassword.setOnClickListener {
 
-            //redirectionam din nou la Signup
-            startActivity(Intent("ChangePasswordActivity"))
+            if(savedInstanceState == null) {
+
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentLogin, ChangePasswordActivity(appContext))
+                    .addToBackStack(null)
+                    .commit()
+
+            }
 
         }
 
-    }
+        getBack.setOnClickListener {
 
-    override fun onStop() {
-        super.onStop()
+            if (parentFragmentManager.backStackEntryCount > 0) {
 
-        if(isExit) { finish() }
+                parentFragmentManager.popBackStack()
+
+            } else {
+
+                startActivity(Intent("RegisterActivity").addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK))
+
+            }
+
+        }
 
     }
 
@@ -103,98 +116,150 @@ class LoginActivity : AppCompatActivity() {
 
 
 //CHANGE PASSWORD ACTIVITY
-class ChangePasswordActivity : AppCompatActivity() {
+class ChangePasswordActivity(context: Context) : Fragment(R.layout.activity_change_password) {
 
-    // TODO: EXPERIMENTAL
     private var email: String? = null
     private var password: String? = null
+    private val appContext = context
+    private val apiCall = CoroutineScope(Dispatchers.Main)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_change_password)
-        window.statusBarColor = ContextCompat.getColor(this, R.color.black)
-        window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
+    @SuppressLint("SetTextI18n")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val button: Button = findViewById(R.id.next)
-        val emailText: EditText = findViewById(R.id.emailText)
-        val newPassword: EditText = findViewById(R.id.passwordText)
-        val errorText: TextView = findViewById(R.id.errorText)
+        val next: Button = view.findViewById(R.id.next)
+        val emailText: EditText = view.findViewById(R.id.emailText)
+        val newPassword: EditText = view.findViewById(R.id.passwordText)
+        val errorText: TextView = view.findViewById(R.id.errorText)
+        val getBack: CardView = view.findViewById(R.id.getBack)
 
         // THIS IS THE FIRST PART OF THE PROCESS , THE USER INPUTS THE EMAIL AND ENTER A NEW PASSWORD.
-        button.setOnClickListener {
+        next.setOnClickListener {
 
             email = emailText.text.toString()
             password = newPassword.text.toString()
 
-            if(!email.isNullOrEmpty() && !password.isNullOrEmpty() && '@' in email!!) {
+            try {
 
-                thread {
+                if (email!!.length >= 5 && password!!.length >= 8 && '@' in email!! && password!!.isNotEmpty()) {
 
-                    var response = Https().httpsFun8(email!!)
+                    apiCall.launch {
 
-                    runOnUiThread {
+                        var response: Boolean
+                        withContext(Dispatchers.IO) {
 
-                        if(response) {
+                            response = Https().httpsFun8(email!!)
 
-                            setContentView(R.layout.activity_code_verification)
-                            window.statusBarColor = ContextCompat.getColor(this, R.color.black)
-                            window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
+                        }
 
-                            runOnUiThread {
+                        if (response) {
 
-                                // THIS IS THE SECOUND PARD , THE USER RECIVES A CODE AND ENTER IT HERE AND THEN GETS BACK TO LOGIN!
-                                val inputCode: EditText = findViewById(R.id.codeText)
-                                val buttonA: Button = findViewById(R.id.sendCode)
-
-                                buttonA.setOnClickListener {
-
-                                    response = false
-                                    buttonA.isClickable = false
-                                    val code = inputCode.text.toString()
-
-                                    thread {
-
-                                        response = Https().httpsFun6( code , email!! , password!!)
-
-                                        runOnUiThread {
-
-                                            if(response) {
-
-                                                finish()
-
-                                            } else {
-
-                                                errorText.text = "Somthing is wrong , server problem or wrong code"
-
-                                            }
-
-                                        }
-
-                                        buttonA.isClickable = true
-
-                                    }
-
-                                }
-
-                            }
+                            // STARTS PASSWORD CONFIRM FRAGMENT
+                            parentFragmentManager.beginTransaction()
+                                .replace(R.id.fragmentConfirmChange, PasswordConfirmActivity(appContext, email, password))
+                                .addToBackStack(null)
+                                .commit()
 
                         } else {
 
-                            errorText.text = "SOMTHING IS WRONG , SERVER ERROR OR INCORECT EMAIL/PASSWORD"
+                            errorText.text = "EMAIL INCORRECT/NOT FOUND!"
 
                         }
 
                     }
 
+                } else {
+
+                    errorText.text = "EMAIL SHOULD BE AT LEAST 5 CHARACTERS AND PASSWORD SHOULD BE AT LEAST 8 , EMAIL SHOULD CONTAIN @"
+
                 }
 
-            } else if(email!!.length < 11 || password!!.length < 8 || '@' !in email!!) {
+            } catch (e: Exception) {
 
-                errorText.text = "EMAIL SHOULD BE AT LEAST 11 CARACTERS AND PASSWORD SHOULD BE AT LEAST 8 , EMAIL SHOULD CONTAIN @"
+                Log.e("CHANGE PASSWORD ACTIVITY" , "INPUT ERROR: " + e.message)
+
+            }
+
+        }
+
+        getBack.setOnClickListener {
+
+            if (parentFragmentManager.backStackEntryCount > 0) {
+
+                parentFragmentManager.popBackStack()
 
             } else {
 
-                errorText.text = "EMAIL OR PASSWORD CANNOT BE EMPTY!"
+                startActivity(Intent("RegisterActivity").addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK))
+
+            }
+
+        }
+
+    }
+
+}
+
+
+
+class PasswordConfirmActivity(context: Context , emailText: String? , passwordText: String?) : Fragment(R.layout.activity_code_verification) {
+
+    private var email: String? = emailText
+    private var password: String? = passwordText
+    private var appContext = context
+    private var apiCall = CoroutineScope(Dispatchers.Main)
+
+    @SuppressLint("SetTextI18n")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val inputCode: EditText = view.findViewById(R.id.codeText)
+        val next: Button = view.findViewById(R.id.sendCode)
+        val errorText: TextView = view.findViewById(R.id.codeVerErrorText)
+        val getBack: CardView = view.findViewById(R.id.getBack)
+
+        next.setOnClickListener {
+
+            next.isClickable = false
+            val code = inputCode.text.toString()
+
+            apiCall.launch {
+
+                var response: Boolean
+
+                withContext(Dispatchers.IO) {
+
+                    response = Https().httpsFun6(code , email!! , password!!)
+
+                }
+
+                if(response) {
+
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentCodeVerification, LoginActivity(appContext))
+                        .addToBackStack(null)
+                        .commit()
+
+                } else {
+
+                    errorText.text = "SOMETHING IS WRONG"
+                    next.isClickable = true
+
+                }
+
+            }
+
+        }
+
+        getBack.setOnClickListener {
+
+            if (parentFragmentManager.backStackEntryCount > 0) {
+
+                parentFragmentManager.popBackStack()
+
+            } else {
+
+                startActivity(Intent("RegisterActivity").addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK))
 
             }
 
@@ -207,95 +272,115 @@ class ChangePasswordActivity : AppCompatActivity() {
 
 
 //interfata account created , daca creeam un account cu succes
-class AccountCreatedActivity : AppCompatActivity() {
+class AccountCreatedActivity(context: Context) : Fragment(R.layout.activity_account_registerd) {
 
-    private var isExit = false
+    private val appContext = context
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_account_registerd)
-        window.statusBarColor = ContextCompat.getColor(this, R.color.black)
-        window.navigationBarColor =  ContextCompat.getColor(this, R.color.black)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val intent = Intent("LoginActivity")
-        val buttonA : Button = findViewById(R.id.proceedToLogin)
+        val buttonA : Button = view.findViewById(R.id.proceedToLogin)
+        buttonA.setOnClickListener {
 
-        buttonA.setOnClickListener{
-
-            isExit = true;
-            startActivity(intent)
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentAccountRegistered, LoginActivity(appContext))
+                .addToBackStack(null)
+                .commit()
 
         }
 
     }
 
-    override fun onStop() {
-        super.onStop()
+    @TestOnly
+    override fun onDetach() {
+        super.onDetach()
 
-        if(isExit) { finish() }
+        Log.d("TEST" , "JUST ACA TEST")
 
     }
 
 }
 
 
-
 //code verification activity , clasa terminata
-class CodeVerificationActivity : AppCompatActivity() {
+class CodeVerificationActivity(context: Context) : Fragment(R.layout.activity_code_verification) {
 
-    private var isExit = false
+    private val apiCall = CoroutineScope(Dispatchers.Main)
+    private val appContext = context
 
-    @SuppressLint("MissingInflatedId")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_code_verification)
-        window.statusBarColor = ContextCompat.getColor(this, R.color.black)
-        window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
+    @SuppressLint("MissingInflatedId", "SetTextI18n")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val intent = Intent("MainActivity")
-        val inputCode: EditText = findViewById(R.id.codeText)
-        val buttonA: Button = findViewById(R.id.sendCode)
+        val inputCode: EditText = view.findViewById(R.id.codeText)
+        val errorText: TextView = view.findViewById(R.id.codeVerErrorText)
+        val send: Button = view.findViewById(R.id.sendCode)
+        val getBack: CardView = view.findViewById(R.id.getBack)
 
-        buttonA.setOnClickListener {
+
+        send.setOnClickListener {
 
             //verificam daca exista conexiune la internet
             if(permitObjInternetAcess) {
 
                 //inchidem actiunea buttonului
-                buttonA.isClickable = false
+                send.isClickable = false
 
                 //thread nou din accelas motiv ca cele de mai sus
-                thread {
+                apiCall.launch {
+
+                    val responseServer: String
 
                     //trimitem datele la server si asteptam raspunsul
-                    val responseServer = Https().httpsFun5(inputCode.text.toString())
+                    withContext(Dispatchers.IO) {
 
-                    runOnUiThread {
-
-                        //verificam raspunsul de la server
-                        if(responseServer.isNotEmpty() && responseServer != "false") {
-
-                            //datele intoarse de la server sunt stocate in local storage
-                            val keystore = AndroidLocalStorage(applicationContext)
-                            keystore.saveESUI(localUserEmail!!, responseServer , localUsername!! , localId!!)
-
-                            //CREEAM TABELUL MAIN , DUPA CONNECTARE(DACA NU EXISTA)
-                            MasterDb(applicationContext).tableCreatorMain()
-
-                            //stocam in variabila globala serverAccessCode si permitem activitati sa fie distrusa prin permitD
-                            serverAccessCode = responseServer; isExit = true
-
-                            //deschidem activitate MAIN
-                            startActivity(intent)
-
-                        } // o sa adaugam un else aici care afisaza pe ecran ca am introdus codul gresit
+                        responseServer = Https().httpsFun5(inputCode.text.toString())
 
                     }
 
-                    //deschidem actiunea butonului
-                    buttonA.isClickable = true
+                    // CHECKS IF SERVER RESPONSE IS APPROPRIATE
+                    if(responseServer.isNotEmpty() && responseServer != "false") {
+
+                        //KEEP THE SAC ON THE GLOBAL VAR
+                        serverAccessCode = responseServer
+
+                        //STORE THE RECEIVED DATA FORM SERVER
+                        val keystore = AndroidLocalStorage(appContext)
+                        keystore.storeLoginData(localUserEmail, serverAccessCode , localUsername , localId)
+
+                        //CREEAM TABELUL MAIN , DUPA CONNECTARE(DACA NU EXISTA)
+                        MasterDb(appContext).tableCreatorMain()
+
+                        //STARTS MAIN_ACTIVITY
+                        startActivity(Intent("MainActivity"))
+
+                    } else {
+
+                        errorText.text = "WRONG CODE/SERVER ERROR"
+                        send.isClickable = true
+
+                    }
 
                 }
+
+            } else {
+
+                errorText.text = "INTERNET CONNECTION LOST!"
+                send.isClickable = true
+
+            }
+
+        }
+
+        getBack.setOnClickListener {
+
+            if (parentFragmentManager.backStackEntryCount > 0) {
+
+                parentFragmentManager.popBackStack()
+
+            } else {
+
+                startActivity(Intent("RegisterActivity").addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK))
 
             }
 
@@ -303,109 +388,5 @@ class CodeVerificationActivity : AppCompatActivity() {
 
     }
 
-    override fun onStop() {
-        super.onStop()
-
-        //distrugem activitatea
-        if(isExit){ finish() }
-
-    }
-
 }
-
-
-
-//ConnUI
-class ConnActivity: AppCompatActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_conn_ui)
-        window.statusBarColor = ContextCompat.getColor(this, R.color.black)
-        window.navigationBarColor = ContextCompat.getColor(this, R.color.gri30)
-
-        //val intent1 = Intent("com.example.ACTION_AC6") //buton de inapoi de inplementat in colt sus!!!
-        val buttonA: Button = findViewById(R.id.sendConnRequest)
-        val inputConnRequest: EditText = findViewById(R.id.inputConnRequest)
-
-        //linearLayoutul si constraint layoutul pentru toata clasa
-        val cardLinearLayout: LinearLayout = findViewById(R.id.cardLinearLayoutConn)
-        val constraintLayout: ConstraintLayout = findViewById(R.id.connConstraintLayout)
-
-        //dam constraint layoutul obiectuil, pentru a functiona live friend request
-        Transmission.addConstraint(constraintLayout)
-
-        //adaugam in obiect cand intram in activitate , ca sa putem afisa pe interfata
-        Transmission.addLayout(cardLinearLayout)
-
-        //deschidem o instanta DB
-        val db = MasterDb(applicationContext)
-
-        //stocam in connArray toate CONN requesturile externe
-        val connArray = db.connLoader(); Log.d("CREATE_CONN", "LOADER")
-
-        //afisam pe interfata toate conn_requests
-        for(i in 0 until connArray.size step 1) {
-
-            val listA : MutableList<String?> = mutableListOf(connArray[i][0] ,connArray[i][1], connArray[i][2], connArray[i][3] , connArray[i][4], connArray[i][5])
-            CardViews().connUiCard(listA ,cardLinearLayout , applicationContext , constraintLayout)
-
-        }; cardConnBoolean = true
-
-        //permite obiectului Transmission sa faca anumite executi
-        permitObjConn = true
-
-        buttonA.setOnClickListener { //TODO: FA O FUNCTIE
-
-            //extragem textul din textBox
-            val userInput = inputConnRequest.text.toString()
-
-            //aici facem request_conn
-            Transmission.sendRequest(userInput, Random().genRandomCode(12))
-
-            //stergem textul de pe ecranul userului
-            inputConnRequest.text.clear()
-
-        }
-
-    }
-
-    override fun onStop() {
-        super.onStop()
-
-        //permite obiectului Transmission sa faca anumite executi
-        permitObjConn = false
-
-    }
-
-    override fun onRestart() {
-        super.onRestart()
-
-        finish()
-        startActivity(Intent("ConnActivity"))
-
-    }
-
-    fun buttonConn(view: View) { finish() }
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
