@@ -415,9 +415,9 @@ class MainActivity: AppCompatActivity() {
     }
 
     fun buttonA(view: View) { startActivity(Intent("ConnActivity")) }
-    fun buttonB(view: View) { startActivity(Intent("BlackListActivity")) }
-    fun buttonC(view: View) { startActivity(Intent("LogsActivity")) }
-    fun buttonD(view: View) { startActivity(Intent("settingsActivity")) }
+    fun buttonB(view: View) { startActivity(Intent("GroupsActivity")) }
+    fun buttonC(view: View) { startActivity(Intent("BlackListActivity")) }
+    fun buttonD(view: View) { startActivity(Intent("SettingsActivity")) }
 
     private fun userOnFirstConnect() {
 
@@ -434,7 +434,25 @@ class MainActivity: AppCompatActivity() {
 
 }
 
+class SettingsActivity: AppCompatActivity() {
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_settings)
+
+        TODO("DE CONTINUAT ACTIVITATEA!")
+
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+
+        finish()
+        startActivity(Intent("SettingsActivity"))
+
+    }
+
+}
 
 //ConnUI
 class ConnActivity: AppCompatActivity() {

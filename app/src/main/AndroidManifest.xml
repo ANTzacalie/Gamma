@@ -24,7 +24,6 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -43,10 +42,8 @@
             android:name=".UserActivity"
             android:exported="true">
 
-
             <intent-filter>
                 <action android:name="InterfaceActivity" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -60,6 +57,17 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="SettingsActivity" />
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">

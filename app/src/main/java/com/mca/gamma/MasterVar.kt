@@ -67,10 +67,9 @@ var permitObjInternetAcess: Boolean = false //Connectivity object , asta ne arat
 
 /*VERSION 2.80 */////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*
 
-// TODO: DE REFACUT REGISTER + LOGIN  SI Main Activity + Conn + Black List + Logs, SA FIE MAI SMOOTH
 // TODO: DE ADAUGAT LA INTRAREA IN APLICATIE DOMAINE/IP_NAME + PORT
 // TODO: DE IMPLEMENTAT APP_PASSWORD , PAROLA ESTE STOCATA IN KEYSTORE , DAR PAROLA VA FI SETATA IN SETARI , NU LA INITIALIZAREA APLICATIEI
-// TODO: DE INTEGRAT SETARILE APLICATIEI SI RESTUL DE INTERFATA MAIN(BLACK LIST SI LOGS)
+// TODO: DE INTEGRAT SETARILE APLICATIEI SI RESTUL DE INTERFATA MAIN(BLACK LIST SI Grups(VA AVEA TABEL SEPARAT IN DB))
 
 // TODO MASTER:
     // -- IMPLEMENTEAZA FRAGMENT VIEW PENTRU:
