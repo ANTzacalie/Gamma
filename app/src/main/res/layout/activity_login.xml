@@ -13,14 +13,14 @@
         android:layout_width="331dp"
         android:layout_height="330dp"
         android:layout_marginStart="40dp"
+        android:layout_marginTop="150dp"
         android:layout_marginEnd="40dp"
-        android:layout_marginBottom="241dp"
         android:background="@drawable/round_shape"
         android:backgroundTint="@color/white"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
 
         <EditText
             android:id="@+id/emailText"
@@ -35,12 +35,12 @@
             android:inputType="textEmailAddress"
             android:textColor="@color/black"
             android:textColorHint="@color/black"
-            app:layout_constraintBottom_toTopOf="@+id/passwordText"
+            app:layout_constraintBottom_toTopOf="@+id/changeUsername"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
-            android:id="@+id/passwordText"
+            android:id="@+id/changeUsername"
             android:layout_width="301dp"
             android:layout_height="50dp"
             android:layout_marginStart="15dp"
@@ -133,13 +133,11 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="133dp"
-        android:layout_marginTop="160dp"
-        android:layout_marginEnd="133dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="50dp"
         android:text="@string/amma"
         android:textColor="@color/white"
         android:textSize="40sp"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

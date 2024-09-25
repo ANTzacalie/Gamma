@@ -1,5 +1,3 @@
-@file:Suppress("OVERRIDE_DEPRECATION")
-
 package com.mca.gamma
 import android.annotation.SuppressLint
 import android.app.Application
@@ -14,40 +12,58 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
-import kotlin.concurrent.thread
 
-/* TODO:
-    MASTER COMMENT:
-    --> LA SFARSIT < CAND TERMINAM APLICATIA , VOM AVEA TOATE COMMENTURILE IN ENGLEZA! >
-    --> PUTEM SCHIMBA LAYOUTUL IN ACTIVITATE cu setContentView de cate ori vrem , acu atunci cand o facem toata logica noului layout trebuie pusa in runOnUiThread{}
+
+/* Todo:
+Master Comment:
+-> At the end <when we finish the application, we will have all the comments in English!>
 */
 
-//masterActivity , inceputul aplicatie si a initializarilor
+// MasterActivity, the beginning of application and initializations , SETUP()
 class MasterActivity : Application() {
 
     override fun onCreate() {
         super.onCreate()
 
-        //LUAM VALORILE STOCATE IN ANDROID_LOCAL_STORAGE
+        // take the values stored in Android_local_storage
         val key = AndroidLocalStorage(applicationContext)
-        localUserEmail = key.getEmail(); serverAccessCode = key.getSecureCode(); localUsername = key.getUsername(); localId = key.getId()
 
-        //dam context obiectului Transmission , o singura data la inceput
-        Transmission.addContext(applicationContext)
+        serverAddress = key.getHP()
+        if(!serverAddress.isNullOrEmpty()) {
 
-        //AICI INREGISTRAM OBIECTUL/CLASA CONNECTIVITY CA BRODCAST RECEIVED(VA MONITORIZA SCHIMBARILE DE RETEA)
+            holdServerAddress = true
+
+        }
+
+        localUserEmail = key.getEmail()
+        serverAccessCode = key.getSecureCode()
+        localUsername = key.getUsername()
+        localId = key.getId()
+
+        // here we record the object/class Connectivity as Brodcast Received (will monitor network changes)
         val connectivityReceiver = Connectivity
         val filter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
         registerReceiver(connectivityReceiver, filter)
 
-        //verificam daca userul este conectat si initializam transmission si coroutineA
-        if(!serverAccessCode.isNullOrEmpty()) { Transmission.start(); coroutineA.start(); permitActivityAfterLogin = false }
+        // we check if the user is connected and we initialize transmission and coroutineA
+        if(!serverAccessCode.isNullOrEmpty()) {
+
+            Log.d("SERVER" , "USER CONNECTED TO: $serverAddress")
+
+            Transmission.addContext(applicationContext)
+            Transmission.start()
+            coroutineA.start(); permitActivityAfterLogin = false
+
+        }
 
         Log.d("APP" , "LOCAL USER CONNECTED , EMAIL: $localUserEmail + USERNAME: $localUsername + ID: $localId + SAC: $serverAccessCode")
+
     }
 
     private val coroutineA = CoroutineScope(Dispatchers.Main).launch {
@@ -67,7 +83,7 @@ class MasterActivity : Application() {
         }
 
         i = 0; val userEmail = db.mainLoader()
-        //trimitem toate mesajele care avem sa le dam prietenilor folosindune de USER_EMAIl
+        // We send all the messages we have to give to friends using user_email
         repeat(userEmail.size) {
             val have = db.findMessageStandBy(userEmail[i][4])
             if (have) {
@@ -77,7 +93,7 @@ class MasterActivity : Application() {
         }
 
         i = 0
-        //anuntam toti prieteni ca suntem online
+        // we announce all friends that we are online
         repeat(userEmail.size) {
             Transmission.imOnline(userEmail[i][0])
             i++
@@ -89,21 +105,63 @@ class MasterActivity : Application() {
 }
 
 
-
+// IT PROMPTS TO MAIN_ACTIVITY OR SETUP
 class InitActivity: AppCompatActivity() {
 
+    @SuppressLint("SetTextI18n", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //aici verificam daca userul este conectat sau nu
+        // here we check whether the user is connected or not
         if(!permitActivityAfterLogin) {
 
             startActivity(Intent("MainActivity")); Log.d("INIT_ACTIVITY" ,"ACTIVITY_MAIN")
 
-        }
-        else {
+        } else if(!holdServerAddress) {
 
-            startActivity(Intent("RegisterActivity")); Log.d("INIT_ACTIVITY" ,"ACTIVITY_REGISTER")
+            runOnUiThread {
+
+                setContentView(R.layout.server_address_activity)
+
+                window.statusBarColor = ContextCompat.getColor(this, R.color.black)
+                window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
+
+                val hostnameText: EditText = findViewById(R.id.hostnameText)
+                val portText: EditText = findViewById(R.id.portText)
+                val next: Button = findViewById(R.id.next)
+
+                next.setOnClickListener {
+
+                    next.isClickable = false
+                    next.setBackgroundColor(resources.getColor(R.color.red))
+
+                    val hostname = hostnameText.text.toString()
+                    val port = portText.text.toString()
+
+                    if(hostname.isNotEmpty() && port.isNotEmpty()) {
+
+                        val key = AndroidLocalStorage(applicationContext)
+                        serverAddress = "http://$hostname:$port" // HTTP FOR NOW , BACK HOME BE MODIFIED TO HTTPS!
+                        key.saveHP("http://$hostname:$port")
+
+                        startActivity(Intent("RegisterActivity")); Log.d("INIT_ACTIVITY", "ACTIVITY_REGISTER")
+
+                    } else {
+
+                        Toast.makeText(applicationContext ,"Hostname and port cannot be empty!", Toast.LENGTH_SHORT).show()
+
+                        next.setBackgroundColor(resources.getColor(R.color.black))
+                        next.isClickable = true
+
+                    }
+
+                }
+
+            }
+
+        } else {
+
+            startActivity(Intent("RegisterActivity")); Log.d("INIT_ACTIVITY", "ACTIVITY_REGISTER")
 
         }
 
@@ -121,137 +179,160 @@ class InitActivity: AppCompatActivity() {
 
 
 
-//register class, aici se face inregistrarea userului in db a serverului
+// Register Class, here is the user registration in db of the server
 class RegisterActivity : AppCompatActivity() {
 
-    @SuppressLint("SetTextI18n")
+    private val apiCall = CoroutineScope(Dispatchers.Main)
+
+    @SuppressLint("SetTextI18n", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register_account)
         window.statusBarColor = ContextCompat.getColor(this, R.color.black)
         window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
 
-        val buttonA : Button = findViewById(R.id.createAccount)
-        val buttonB : TextView = findViewById(R.id.goToLogin)
+        val next : Button = findViewById(R.id.next)
+        val toLogin : TextView = findViewById(R.id.goToLogin)
         val inputUsername : EditText = findViewById(R.id.usernameText)
         val inputEmail : EditText = findViewById(R.id.emailText)
-        val inputPassword : EditText = findViewById(R.id.passwordText)
-        val errorTextOutput : TextView = findViewById(R.id.errorText)
+        val inputPassword : EditText = findViewById(R.id.changeUsername)
+        val goBack: CardView = findViewById(R.id.goBack)
         var serverResponse : String
 
-        buttonA.setOnClickListener {
+
+        goBack.setOnClickListener {
+
+            val key = AndroidLocalStorage(applicationContext)
+            key.saveHP(null)
+            restartApp()
+
+        }
+
+        next.setOnClickListener {
+
+            // we close the action of the USER button
+            next.isEnabled = false
+            next.setBackgroundColor(resources.getColor(R.color.red))
 
             if (permitObjInternetAcess) {
 
-                //inchidem actiunea butonului pentru user
-                buttonA.isEnabled = false
-
-                //verificam daca datele introduse respecta condiitiile
+                // we check if the data entered comply with the conditions
                 if(inputUsername.length() in 4..30 && inputEmail.length() >= 5 && inputPassword.length() >= 8 && inputPassword.length() <= 50 && '@' in inputEmail.text.toString()) {
 
-                    //am folosit thread pentru ca functiile HTTPS dureaza , iar limbajul este asincron , inauntrul thread este normal (linear)
-                    thread {
+                    //Coroutine call for HTTPS calls
+                    apiCall.launch {
 
-                         //trimitem datele la server si asteptam raspunusul
-                         serverResponse = Https().httpsFun4(inputUsername.text.toString(), inputEmail.text.toString(), inputPassword.text.toString())
+                        withContext(Dispatchers.IO) {
 
-                         runOnUiThread {
+                            serverResponse = Https().httpsFun4(inputUsername.text.toString(), inputEmail.text.toString(), inputPassword.text.toString())
 
-                             when (serverResponse) {
+                        }
 
-                                 "true" ->  {
+                        when (serverResponse) {
 
-                                     if(savedInstanceState == null) {
+                            "true" ->  {
 
-                                         supportFragmentManager.beginTransaction()
-                                             .replace(R.id.fragmentRegister, AccountCreatedActivity(applicationContext))
-                                             .commitNow()
+                                if(savedInstanceState == null) {
 
-                                     }
+                                    supportFragmentManager.beginTransaction()
+                                        .replace(R.id.fragmentRegister, AccountCreatedActivity(applicationContext))
+                                        .commitNow()
 
-                                 }
-                                 "false" -> {
+                                }
 
-                                     //redeschidem actiunea butonului pentru user
-                                     buttonA.isEnabled = true
+                            }
+                            "false" -> {
 
-                                     //asta se afisaza daca in server accountul exista
-                                     errorTextOutput.text = "ERROR CREATING ACCOUNT!"
+                                // reopen the action of the user button
+                                next.isEnabled = true
+                                next.setBackgroundColor(resources.getColor(R.color.black))
 
-                                 }
-                                 "FAILED" -> {
+                                // this is displayed if in the server the account already exists
+                                Toast.makeText(applicationContext, "ERROR CREATING ACCOUNT!", Toast.LENGTH_SHORT).show()
 
-                                     //redeschidem actiunea butonului pentru user
-                                     buttonA.isEnabled = true
+                            }
+                            "FAILED" -> {
 
-                                     //asta se afisaza daca serverul nu raspunde
-                                     errorTextOutput.text = "SERVER NOT RESPONDING"
+                                // reopen the action of the user button
+                                next.isEnabled = true
+                                next.setBackgroundColor(resources.getColor(R.color.black))
 
-                                 }
+                                //This is displayed if the server does not answer
+                                Toast.makeText(applicationContext, "SERVER NOT RESPONDING" ,Toast.LENGTH_SHORT).show()
 
-                             }
+                            }
 
-                         }
-
+                        }
+                    
                     }
-
                 } else {
 
-                    //pentru cazurile cand inputul de la user nu este conform serverului
+                    // for cases when the input at the user is not in accordance with the server
                     if(inputUsername.length() <= 3) {
 
-                        errorTextOutput.text = "USERNAME TOO SHORT! , SHOULD BE BIGGER THAN 3 CHARACTERS"
+                        Toast.makeText(this, "USERNAME TOO SHORT! , SHOULD BE BIGGER THAN 3 CHARACTERS", Toast.LENGTH_LONG).show()
 
-                        //redeschidem actiunea butonului pentru user
-                        buttonA.isEnabled = true
+                        // reopen the action of the user button
+                        next.isEnabled = true
+                        next.setBackgroundColor(resources.getColor(R.color.black))
 
                     } else if(inputEmail.length() < 5) {
 
-                        errorTextOutput.text = "EMAIL TOO SHORT!"
+                        Toast.makeText(this, "EMAIL TOO SHORT!", Toast.LENGTH_SHORT).show()
 
-                        //redeschidem actiunea butonului pentru user
-                        buttonA.isEnabled = true
+                        // reopen the action of the user button
+                        next.isEnabled = true
+                        next.setBackgroundColor(resources.getColor(R.color.black))
 
                     } else if(inputPassword.length() < 8) {
 
-                        errorTextOutput.text = "PASSWORD TOO SHORT! , SHOULD BE BIGGER THAN 7 CHARACTERS"
+                        Toast.makeText(this, "PASSWORD TOO SHORT! , SHOULD BE BIGGER THAN 7 CHARACTERS", Toast.LENGTH_LONG).show()
 
-                        //redeschidem actiunea butonului pentru user
-                        buttonA.isEnabled = true
+                        // reopen the action of the user button
+                        next.isEnabled = true
+                        next.setBackgroundColor(resources.getColor(R.color.black))
 
                     } else if(inputPassword.length() > 50) {
 
-                        errorTextOutput.text = "PASSWORD TOO LONG! , SHOULD BE LESSER THAN 50 CHARACTERS"
+                        Toast.makeText(this, "PASSWORD TOO LONG! , SHOULD BE LESSER THAN 50 CHARACTERS", Toast.LENGTH_LONG).show()
 
-                        //redeschidem actiunea butonului pentru user
-                        buttonA.isEnabled = true
+                        // reopen the action of the user button
+                        next.isEnabled = true
+                        next.setBackgroundColor(resources.getColor(R.color.black))
 
                     } else if('@' !in inputEmail.toString()) {
 
-                        errorTextOutput.text = "INCORRECT EMAIL , SHOULD CONTAIN CHARACTER '@'"
+                        Toast.makeText(this, "INCORRECT EMAIL , SHOULD CONTAIN CHARACTER '@'", Toast.LENGTH_LONG).show()
 
-                        //redeschidem actiunea butonului pentru user
-                        buttonA.isEnabled = true
+                        // reopen the action of the user button
+                        next.isEnabled = true
+                        next.setBackgroundColor(resources.getColor(R.color.black))
 
                     } else if(inputUsername.length() > 30) {
 
-                        errorTextOutput.text = "USERNAME TOO LONG , MUST BE UNDER 30 CHARACTERS"
+                        Toast.makeText(this , "USERNAME TOO LONG , MUST BE UNDER 30 CHARACTERS" , Toast.LENGTH_LONG).show()
 
-                        //redeschidem actiunea butonului pentru user
-                        buttonA.isEnabled = true
+                        // reopen the action of the user button
+                        next.isEnabled = true
+                        next.setBackgroundColor(resources.getColor(R.color.black))
+
                     }
 
                 }
 
             } else {
 
-                errorTextOutput.text = "INTERNET CONNECTION LOST"
+                Toast.makeText(this, "INTERNET CONNECTION LOST" , Toast.LENGTH_SHORT).show()
+
+                // reopen the action of the user button
+                next.isEnabled = true
+                next.setBackgroundColor(resources.getColor(R.color.black))
 
             }
 
         }
 
-        buttonB.setOnClickListener {
+        toLogin.setOnClickListener {
 
             if(permitObjInternetAcess) {
 
@@ -269,13 +350,29 @@ class RegisterActivity : AppCompatActivity() {
 
     }
 
+    private fun restartApp() {
+
+        holdServerAddress = false
+
+        // Intent to restart the app
+        val intent = packageManager.getLaunchIntentForPackage(packageName)?.apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK) }
+        if (intent != null) {
+            startActivity(intent)
+        }
+
+        // Finish the current activity
+        finish()
+
+    }
+
 }
 
 
 
-//clasa in lucru  ,USER UI
+//USER UI
 class UserActivity : AppCompatActivity() {
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) { Log.d("USER_ACTIVITY" ,"CREATED")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
@@ -283,33 +380,43 @@ class UserActivity : AppCompatActivity() {
         window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
         
         val sendMessageButton: ImageButton = findViewById(R.id.sendMessage)
-        val loadProfileIcon: ImageView = findViewById(R.id.cardImage) //asta cand vom adauga file support(mai mult info in MasterVar)
+        val loadProfileIcon: ImageView = findViewById(R.id.cardImage) // that when we add File Support (more Info in Mastervar)
         val userSettingsButton: LinearLayout = findViewById(R.id.userSettings)
         val inputText: EditText = findViewById(R.id.messageText)
         val usernameTextView: TextView = findViewById(R.id.usernameDisplayText)
         val cardLinearLayout: LinearLayout = findViewById(R.id.cardsLayout)
-        val constraintLayout: ConstraintLayout = findViewById(R.id.constraintUserUi)
 
-        //variabila globala care stocheaza emailul userului cu care comunicam
+        // the global variable that stores the user of the user with whom we communicate
         globalSpecificUser = sUser
 
-        //adaugam in obiectul Transmission classLinearLayout pentru a putea actualiza interfata
+        // We add in the object of the transmission classlinearlayout to be able to update the interface
         Transmission.addLayout(cardLinearLayout)
 
-        //permite obiectului sa execute actiuni in MSG_Lisener , dupa ce classLinearLayout a fost adaugat
+        // allows the object to perform actions in msg_lisener, after classlinearlayout has been added
         permitObjUser = true
 
-        //initializam data de baze , deschidem o instanta a ei
+        // we initialize the date of bases, we open an instance of it
         val db = MasterDb(applicationContext)
 
-        //introducem text in caseta textViewCIA pentru a afisa usernameul prietenului
-        usernameTextView.text = "$sUsername"
+        // we enter text in the textViewcia box to display the friend's username
+        usernameTextView.text = sUsername
 
         sendMessageButton.setOnClickListener { UserActivityChild().sendMessage(inputText , cardLinearLayout , applicationContext , sUser , sUKey , sId) }
-        userSettingsButton.setOnClickListener { UserActivityChild().openSettings(constraintLayout , usernameTextView, applicationContext, db , sUser , sId , sUsername) }
 
-        //aici incarcam mesajele respectivului user(prieten) in messageArray
-        val messageArray = db.messageLoader(sId) //vom face un mecanism de sinconizre folosindune de scoll(in interfata)
+        userSettingsButton.setOnClickListener {
+
+            if(savedInstanceState == null) {
+
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentSettingsUsers, OpenSettingsUser(applicationContext))
+                    .commitNow()
+
+            }
+
+        }
+
+        // here we load all the messages with the friend in  messageArray for now
+        val messageArray = db.messageLoader(sId)
 
         if(messageArray.size > 0) {
 
@@ -317,11 +424,10 @@ class UserActivity : AppCompatActivity() {
 
                 when (messageArray[i][0]) {
 
-                    //mesajele celui care a trimis catre utilizatorul curent
-                    // TODO: ADD THE DATE TO MESSAGE
+                    //The messages of the one who sent to the current user
                     "$sUser" -> { CardViews().receiveMessageCard(messageArray[i][1] , messageArray[i][3] , cardLinearLayout , applicationContext) }
 
-                    //mesajele celui care utilizeaza aplicatia curenta
+                    // messages of the one using the current application
                     "$localUserEmail" -> { CardViews().sendMessageCard(messageArray[i][1] , messageArray[i][3] , cardLinearLayout , applicationContext) }
 
                 }
@@ -337,15 +443,30 @@ class UserActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        //pentru orice eventualitate , inlocuim globalSpecificUser cu null
+        // for any eventuality we replace globalspecificer with null
         globalSpecificUser = null
 
-        //nu mai permite obiectului Transmission sa execute actiuni in MSG_liserner
+        // no longer allow the transmission object to perform actions in msg_liserner
         permitObjUser = false
 
     }
 
-    override fun onRestart() { // ASA II DAU REFRESH ACTIVITAIT DACA USERUL A PARASITO SI REINTRA!
+    override fun onStart() {
+        super.onStart()
+
+        if(backToParentFragment) {
+
+            backToParentFragment = false
+
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragmentSettingsUsers, OpenSettingsUser(applicationContext))
+                .commitNow()
+
+        }
+        
+    }
+
+    override fun onRestart() { 
         super.onRestart()
 
         finish()
@@ -357,7 +478,7 @@ class UserActivity : AppCompatActivity() {
 
 
 
-//MainUI
+//MAIN UI
 class MainActivity: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -366,26 +487,26 @@ class MainActivity: AppCompatActivity() {
         window.statusBarColor = ContextCompat.getColor(this, R.color.black)
         window.navigationBarColor = ContextCompat.getColor(this, R.color.gri30)
 
-        //verificam daca userul este conectat pentru prima data , ca sa deschidem transmission!
+        // We check if the user is first connected to open the transmission!        
         userOnFirstConnect()
 
-        //cardLinearLayout si constraintLayout
+        //cardLinearLayoutSiConstraintLayout
         val cardLinearLayout: LinearLayout = findViewById(R.id.cardLinearLayoutMain)
         val constraintLayout: ConstraintLayout = findViewById(R.id.constraintLayout)
 
-        //dam obiectului constraint layout , pentru a functiona live friend accept
+        // give the object of Constraint Layout, to work Live Friend ACCEPT
         Transmission.addConstraint(constraintLayout)
 
-        // dam obiectului linearLayoutul
+        // give the object Linearlayout
         Transmission.addLayout(cardLinearLayout)
 
-        //deschidem o instanta a date de baze MasterDb
+        // We open an instance of MasterDB
         val db = MasterDb(applicationContext)
 
-        //incarcam toti prieteni din db in mainArray
+        // we load all friends from DB in Main array
         val mainArray = db.mainLoader()
 
-        //afisam pe ecran , prin carduri , toti prieteni connectati
+        // we display on the screen, through cards, all connected friends
         for(i in 0 until mainArray.size step 1) {
 
             val listA: MutableList<String?> = mutableListOf(mainArray[i][0] , mainArray[i][1] , mainArray[i][2] , mainArray[i][3] , mainArray[i][4])
@@ -393,7 +514,7 @@ class MainActivity: AppCompatActivity() {
 
         }; cardMainBoolean = true
 
-        //da permisiune obiectului Transmsiion sa execute anumite actiuni
+        // yes permission to the object Transmission to execute certain actions
         permitObjMain = true
 
     }
@@ -401,7 +522,7 @@ class MainActivity: AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        //ia permisiune obiectului Transmsiion sa execute anumite actiuni
+        // take permission to the Transmission object to execute certain actions
         permitObjMain = false
 
     }
@@ -421,11 +542,12 @@ class MainActivity: AppCompatActivity() {
 
     private fun userOnFirstConnect() {
 
-        //verificam daca userul este conectat la server sau se executa codul o singura data la conectare
+        // We check if the user is connected to the server or the code is executed only once in connection
         if(permitActivityAfterLogin && permitObjInternetAcess) {
             Log.d("MAIN PERMIT" , "TRANSMISSION ACTIVATED FOR FIRST TIME")
 
-            Transmission.start() // CONNECTS THE APP TO SERVER FOR FIRST TIME
+            Transmission.addContext(applicationContext)
+            Transmission.start()
             permitActivityAfterLogin = false
 
         }
@@ -434,13 +556,33 @@ class MainActivity: AppCompatActivity() {
 
 }
 
+// TODO: NOT COMPLETE 
 class SettingsActivity: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.black)
+        window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
 
-        TODO("DE CONTINUAT ACTIVITATEA!")
+        val goBack: ImageView = findViewById(R.id.goBack)
+        val changeUsername: Button = findViewById(R.id.changeUsername)
+        val displayUsername: TextView = findViewById(R.id.usernameDisplayText)
+        displayUsername.text = localUsername
+
+        goBack.setOnClickListener {
+
+            finish()
+
+        }
+
+        changeUsername.setOnClickListener {
+
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.settingsFragments , ChangeUsernameLocalUser(applicationContext))
+                .commitNow()
+
+        }
 
     }
 
@@ -454,36 +596,36 @@ class SettingsActivity: AppCompatActivity() {
 
 }
 
-//ConnUI
+// CONN UI
 class ConnActivity: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_conn_ui)
+        setContentView(R.layout.activity_conn)
         window.statusBarColor = ContextCompat.getColor(this, R.color.black)
         window.navigationBarColor = ContextCompat.getColor(this, R.color.gri30)
 
-        //val intent1 = Intent("com.example.ACTION_AC6") //buton de inapoi de inplementat in colt sus!!!
+        //val intent1 = Intent("com.example.ACTION_AC6")
         val buttonA: Button = findViewById(R.id.sendConnRequest)
         val inputConnRequest: EditText = findViewById(R.id.inputConnRequest)
 
-        //linearLayoutul si constraint layoutul pentru toata clasa
+        // Linearlayout and constraint layout for the whole class
         val cardLinearLayout: LinearLayout = findViewById(R.id.cardLinearLayoutConn)
         val constraintLayout: ConstraintLayout = findViewById(R.id.connConstraintLayout)
 
-        //dam constraint layoutul obiectuil, pentru a functiona live friend request
+        // Dam Constraintlayout object, to work Live Friend Request
         Transmission.addConstraint(constraintLayout)
 
-        //adaugam in obiect cand intram in activitate , ca sa putem afisa pe interfata
+        // we add in the object when we enter into activity so we can display on the interface
         Transmission.addLayout(cardLinearLayout)
 
-        //deschidem o instanta DB
+        // we open a MasterDB instance
         val db = MasterDb(applicationContext)
 
-        //stocam in connArray toate CONN requesturile externe
+        // Store in Conn array all conn external requests
         val connArray = db.connLoader(); Log.d("CREATE_CONN", "LOADER")
 
-        //afisam pe interfata toate conn_requests
+        // we display on the interface all conn_requests
         for(i in 0 until connArray.size step 1) {
 
             val listA : MutableList<String?> = mutableListOf(connArray[i][0] ,connArray[i][1], connArray[i][2], connArray[i][3] , connArray[i][4], connArray[i][5])
@@ -491,18 +633,15 @@ class ConnActivity: AppCompatActivity() {
 
         }; cardConnBoolean = true
 
-        //permite obiectului Transmission sa faca anumite executi
+        // allows the transmission object to make certain executing
         permitObjConn = true
 
-        buttonA.setOnClickListener { //TODO: FA O FUNCTIE
+        buttonA.setOnClickListener {
 
-            //extragem textul din textBox
             val userInput = inputConnRequest.text.toString()
 
-            //aici facem request_conn
+            //here we do conn_request
             Transmission.sendRequest(userInput, Random().genRandomCode(12))
-
-            //stergem textul de pe ecranul userului
             inputConnRequest.text.clear()
 
         }
@@ -512,7 +651,7 @@ class ConnActivity: AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        //permite obiectului Transmission sa faca anumite executi
+        // allows the transmission object to make certain executing
         permitObjConn = false
 
     }
@@ -528,35 +667,3 @@ class ConnActivity: AppCompatActivity() {
     fun buttonConn(view: View) { finish() }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-/*
-/*
-de cate ori avem nevoie de un multithread task folosim corutina !!1
-corutineName = CoroutineScope(Dispatchers.Main).launch {
-
-
-           //aici vine codul executat de corutina
-
-
-}
-*/
-
-activarea ei : corutineName?.start() si cancel() pt a o oprio
-
-/*
-repeat(numberOfTimes){ //functie repetativa speciala , nu este while / for , este una aparte , break nu poate exista aici , repeta de n ori cat este specificat ca parametru !!!
-....bucata cod
-}
- */
-
- */

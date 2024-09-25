@@ -1,19 +1,22 @@
 package com.mca.gamma
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
+import android.widget.LinearLayout
+import androidx.constraintlayout.widget.ConstraintLayout
+import io.socket.client.IO
+import io.socket.client.Socket
+import org.json.JSONArray
+import org.json.JSONObject
+import java.lang.ref.WeakReference
 
 
 //actualizat cu transmission object NK/11/2023
-//nu vom mai implementa aici Transmission vom folosi direct obiectul!
-class SocketBackgroundService : Service() {
-
-    override fun onCreate() {
-        super.onCreate()
-
-
-    }
+// OBIECTUL VA FI FOLOSIT IN CONSTRUCTIE!
+class SocketBack: Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 

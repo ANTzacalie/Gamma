@@ -27,6 +27,7 @@ object Connectivity : BroadcastReceiver() {
 
                 Log.d("CONNECTIVITY" , "USED[${used}]")
 
+                Transmission.socket.disconnect()
                 Transmission.start()
                 //////////////////////////
                 Transmission.syncActionB()
@@ -42,36 +43,54 @@ object Connectivity : BroadcastReceiver() {
 
 }
 
+// ALMOST ALL SOCKET.IO LOGIC
 object Transmission : AppCompatActivity() {
 
     private lateinit var db: MasterDb
     private val options: IO.Options = IO.Options().apply { reconnection = true; forceNew = true }
-    private val socket: Socket = IO.socket("https://antsecurehost.go.ro:8080" , options) // TODO: VA FI O ADRESA CUSTOM , TINUTA IN KEYSTORE SI INTRODUSA LA INCEPUT IN APLICATIE
+    var socket: Socket = IO.socket(serverAddress , options)
+
     private var activityContext: WeakReference<Context>? = null
     private var classLinearLayout: WeakReference<LinearLayout>? = null
     private var classConstraintLayout: WeakReference<ConstraintLayout>? = null
     private val channel = localUserEmail
 
     private fun getLinearLayout(): LinearLayout? {
+
         return classLinearLayout?.get()
+
     }
     private fun getConstraintLayout(): ConstraintLayout? {
+
         return classConstraintLayout?.get()
+
     }
     private fun getContext(): Context? {
+
         return activityContext?.get()
+
     }
     fun addContext(context: Context) {
+
         activityContext = WeakReference(context)
+
     }
     fun addConstraint(constraintLayout: ConstraintLayout) {
+
         classConstraintLayout = WeakReference(constraintLayout)
+
     }
     fun addLayout(linearLayout: LinearLayout) {
+
         classLinearLayout = WeakReference(linearLayout)
+
     }
     fun start() {
-        socket.connect(); createSocketId(); db = MasterDb(getContext()!!)
+
+        socket.connect();
+        createSocketId();
+        db = MasterDb(getContext()!!)
+
     }
 
     init {
@@ -85,7 +104,7 @@ object Transmission : AppCompatActivity() {
             val connCode : String = data.getString("connCode")
 
             when (request) {
-                
+
                 "statusRequest" -> {
 
                     Log.d("statusRequest" , "USED BY: $senderEmail")

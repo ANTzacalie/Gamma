@@ -1,6 +1,5 @@
 package com.mca.gamma
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -11,18 +10,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
-import androidx.security.crypto.MasterKeys
-import com.google.android.material.materialswitch.MaterialSwitch
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -35,6 +28,7 @@ import java.time.format.DateTimeFormatter
 
 class Standby() {
 
+    // standby for connRequest only
     fun connRequestStandby(userEmail: String, connCode: String) {
         Log.d("STB" , "REQUEST PROCEEDING TO USER: $userEmail")
 
@@ -67,7 +61,7 @@ class Standby() {
 
         when(todo) {
 
-            "REQUEST_ACCEPTED" -> {
+            "REQUEST_ACCEPTED" -> { // friend_accept / accept on specific clause
 
                 val data = JSONObject().apply {
 
@@ -89,7 +83,7 @@ class Standby() {
 
             }
 
-            "REQUEST_DENIED" -> { //asta este si firend remove
+            "REQUEST_DENIED" -> { //friend_refuse / deny / default_deny
 
                 val data = JSONObject().apply {
 
@@ -111,7 +105,7 @@ class Standby() {
 
             }
 
-            "BLOCKED_INTERNAL" -> { //asta este si friend block in acelas timp
+            "BLOCKED_INTERNAL" -> { // internal block to a specific friend
 
                 val data = JSONObject().apply {
 
@@ -137,6 +131,7 @@ class Standby() {
 
     }
 
+    //if message not received / not confirmed this will be used on login / oth login
     fun messageStandBy(userEmail: String , connCode: String , context: Context) {
 
         val db = MasterDb(context)
@@ -179,10 +174,11 @@ class Standby() {
 
 class Https() {
 
+    // register request
     fun httpsFun4(text1: String, text2: String, text3: String): String {
 
         val client = OkHttpClient()
-        val url = "https://antsecurehost.go.ro:8080/fun4"
+        val url = "$serverAddress/fun4"
 
         val mediaType = "application/json".toMediaType()
         val requestBody = """
@@ -229,7 +225,7 @@ class Https() {
     fun httpsFun1(text1: String, text2: String ) {
 
         val client = OkHttpClient()
-        val url = "https://antsecurehost.go.ro:8080/fun1"
+        val url = "$serverAddress/fun1"
 
         val mediaType = "application/json".toMediaType()
         val requestBody = """
@@ -277,7 +273,7 @@ class Https() {
     fun httpsFun5(text1: String): String {
 
         val client = OkHttpClient()
-        val url = "https://antsecurehost.go.ro:8080/fun5"
+        val url = "$serverAddress/fun5"
 
         val mediaType = "application/json".toMediaType()
         val requestBody = """
@@ -319,10 +315,12 @@ class Https() {
 
     }
 
+
+
     fun httpsFun6(code: String , email: String , password: String): Boolean {
 
         val client = OkHttpClient()
-        val url = "https://antsecurehost.go.ro:8080/fun6"
+        val url = "$serverAddress/fun6"
 
         val mediaType = "application/json".toMediaType()
         val requestBody = """
@@ -368,7 +366,7 @@ class Https() {
     fun httpsFun8(email: String): Boolean {
 
         val client = OkHttpClient()
-        val url = "https://antsecurehost.go.ro:8080/fun8"
+        val url = "$serverAddress/fun8"
 
         val mediaType = "application/json".toMediaType()
         val requestBody = """
@@ -409,118 +407,73 @@ class Https() {
 
     }
 
+    fun httpsFun7(newUsername: String): Boolean {
+
+        val client = OkHttpClient()
+        val url = "$serverAddress/fun7"
+
+        val mediaType = "application/json".toMediaType()
+        val requestBody = """
+            {
+                "email": "$localUserEmail",
+                "newUsername": "$newUsername",
+                "serverAccessCode": "$serverAccessCode"
+            }
+        """.trimIndent().toRequestBody(mediaType)
+
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .build()
+
+        try {
+
+            val response = client.newCall(request).execute()
+            val responseData = response.body?.string()
+
+            if (response.isSuccessful && !responseData.isNullOrEmpty()) {
+                val jsonObject = JSONObject(responseData)
+
+                return jsonObject.getBoolean("response")
+            }
+
+        } catch (e: IOException) {
+
+            Log.d("HTTPS FUN7", "FAILED")
+
+            return false
+
+        } finally {
+
+            client.connectionPool.evictAll()
+
+        }
+
+        return false
+
+    }
+
 }
 
 class UserActivityChild(): AppCompatActivity() {
 
     fun sendMessage(inputText: EditText, linearLayout: LinearLayout, context: Context , sUser: String? , sUKey: String?, sId : String?) {
 
-        //luam inputul din textbox linie cu linie
+        // take the input from textbox line with line
         val fullInputText = inputText.text.toString().lines()
 
-        //transformam textul luat linie cu linie in multiple line(una sub alta)
+        // we turn the text taken line with line into multiple line (one below)
         val finalText = fullInputText.joinToString("\n")
 
-        //afisam un card cu inputul din textVar
+        // we display a card with input in textvar
         CardViews().sendMessageCard(finalText, Time().getCurrentTime(), linearLayout, context)
 
-        //triitem inputul din textVar la Transmission , apoi la server
+        //Sending the message
         Transmission.sendMessage(sUser, sUKey, finalText, sId) //trimitem mesajul
         Log.d("MESSAGE SENT", "MESSAGE: $finalText")
 
-        //stergem textul din caseta unde introducem text
+        // we delete the text from the box where we enter text
         inputText.text.clear()
-
-    }
-
-    @SuppressLint("InflateParams")
-    fun openSettings(constraintLayout: ConstraintLayout, usernameTextView: TextView, context: Context, db: MasterDb, sUser: String?, sId : String?, sUsername: String?) {
-
-        //TODO: DE CONTINUAT CE A MAI RAMAS
-
-        //TOATE SETARILE INDIVIDUALE PENTRU PRIETENI
-        val inflater = LayoutInflater.from(ContextThemeWrapper(context, R.style.Theme_gamma)) // ContextWrapper ne ofera posibilitatea de a impacheta contextul aplicatiei cu o tema specifica!
-        val settingsInterface = inflater.inflate(R.layout.settings_users , null) as ViewGroup
-
-        val goBack: ImageView = settingsInterface.findViewById(R.id.goBack)
-        val removeFriend: Button = settingsInterface.findViewById(R.id.removeFriend)
-        val exportChat: Button = settingsInterface.findViewById(R.id.exportChat)
-        val changeUsernameFriend: Button = settingsInterface.findViewById(R.id.changeUsernameF)
-        val relativeLayout: RelativeLayout = settingsInterface.findViewById(R.id.relativeLayout)
-        //val image: ImageView = card.findViewById(R.id.cardImage) //in image vom adauga src imagiea de profil a prietenului , vedem cum o adaugam (unde stocam imaginea in prima faza!)
-        settingsInterface.findViewById<TextView>(R.id.usernameDisplayText).text = sUsername
-
-        //luam din db statusul fiecarui switch de mai jos
-        val blockState = db.getBlockState(sUser)
-        val blockSwitch: MaterialSwitch = settingsInterface.findViewById(R.id.switchBlock)
-        if(blockState == 0) {
-            blockSwitch.isChecked = false
-        }else {
-            blockSwitch.isChecked = true
-        }
-
-        val notifyState = db.getNotifyState(sUser)
-        val notifySwitch: MaterialSwitch = settingsInterface.findViewById(R.id.switchNotifications)
-        if(notifyState == 0) {
-            notifySwitch.isChecked = false
-        }else {
-            notifySwitch.isChecked = true
-        }
-
-
-        blockSwitch.setOnCheckedChangeListener { _, isChecked ->
-
-            if(isChecked) {
-                db.updateBlockState(sUser, 1)
-            }else {
-                db.updateBlockState(sUser, 0)
-            }
-
-        }
-
-        notifySwitch.setOnCheckedChangeListener { _, isChecked ->
-
-            if(isChecked) {
-                db.updateNotifyState(sUser , 1)
-            }else {
-                db.updateNotifyState(sUser , 0)
-            }
-
-        }
-
-        goBack.setOnClickListener {
-
-            constraintLayout.removeView(settingsInterface)
-
-        }
-
-        removeFriend.setOnLongClickListener {
-
-            Transmission.refuseRequest(sUser!!); if(context is Activity) { context.finish() }
-
-            true
-        }
-
-        changeUsernameFriend.setOnClickListener {
-
-            if(changeUsernameBoolean) {
-
-                changeUsernameBoolean = false
-
-                CardViews().changeUsername(context, relativeLayout , usernameTextView , settingsInterface , db , sUser , sId)
-
-            }
-
-        }
-
-        exportChat.setOnClickListener {
-
-            // TODO: O SA ADAUGAM O FUNCTIE SA CITEASCA TOT CHAT HISTORY (DOAR TEXT)
-            // TODO: AICI VA FI PRIMA INTERACTIUNE CU ANDROID FILES STUFF , TREBUIE SA CREEAM UN FISIER .TXT SI STOCAT IN DOWNLOADS/DOCUMENTS(VEDEM)
-
-        }
-
-        constraintLayout.addView(settingsInterface)
 
     }
 
@@ -528,8 +481,8 @@ class UserActivityChild(): AppCompatActivity() {
 
 class CardViews(): AppCompatActivity() {
 
-    // CARDUL ESTE COMPUS DIN: TEXT_VIEW(TEXTUL TRIMIS/PRIMIT) + TEXT_VIEW(MESSAGE_DATE)
-    // TODO: ADAUGA MESSAGE DELETE , DOAR PT USERUL LOCAL!
+    // card is composed of: text_view (text sent/received) + text_view (message_date)
+    // Todo: Add Message Delete, only for the local user!
 
     @SuppressLint("InflateParams", "MissingInflatedId")
     fun sendMessageCard(messageText: String? , messageDateText: String?, activityLayout: LinearLayout, context: Context) {
@@ -573,70 +526,34 @@ class CardViews(): AppCompatActivity() {
 
     }
 
-    @SuppressLint("InflateParams") //cu aceasta functie schimbam usernamul la friends
-    fun changeUsername(context: Context, relativeLayout: RelativeLayout, userTextActivity: TextView, settingsInterface: ViewGroup, db: MasterDb, sUser: String?, sId: String?) {
-
-        val inflater = LayoutInflater.from(context)
-        val cardLayout = inflater.inflate(R.layout.username_changer , null) as ViewGroup
-
-        val changeButton: Button = cardLayout.findViewById(R.id.change)
-        val constraintFather: ConstraintLayout = cardLayout.findViewById(R.id.constraintFather)
-        val constraintChild: ConstraintLayout = cardLayout.findViewById(R.id.constraintChild)
-
-        changeButton.setOnClickListener{
-
-            val newUsername: String = cardLayout.findViewById<EditText>(R.id.inputText).text.toString()
-
-            if (newUsername.isNotEmpty() && ' ' !in newUsername) {
-
-                settingsInterface.findViewById<TextView>(R.id.usernameDisplayText).text = newUsername
-                db.updateUsernameIdMain(sUser, newUsername, sId)
-                userTextActivity.text = newUsername
-
-            }
-
-            relativeLayout.removeView(cardLayout); changeUsernameBoolean = true
-
-        }
-
-        constraintFather.setOnClickListener {// DONE: CU ACEST LISENER DISTRUGEM INTERFATA AFISATA("cardLayout");
-
-            relativeLayout.removeView(cardLayout); changeUsernameBoolean = true
-
-        }; constraintChild.setOnClickListener { }// TODO: "DOSE NOTHING , ITS HERE SO THE FATHER DOESN'T KILL HIM"
-
-        relativeLayout.addView(cardLayout)
-    }
-
     @SuppressLint("InflateParams")
     fun mainUiCard(dataVector: MutableList<String?>, activityLayout: LinearLayout, context: Context , constraintLayout: ConstraintLayout) {
 
-        //am folosit inflater ca sa utilizam acceasi interfata a cardului din fisierul main_conn_card de mai multe ori
         val inflater = LayoutInflater.from(context)
         val cardLayout = inflater.inflate(R.layout.main_conn_card , null) as ViewGroup
 
-        //layoutul meniului cu butoane , il dam functiei sa il afiseze pe ecran
+        // Layout of the menu with buttons, give it to the function to display it on the screen
         val buttonLayout = inflater.inflate(R.layout.conn_main_remove_block_prompt , null) as ViewGroup
 
-        //luam cardul pentru a gasi textul si a adauga o imagine in el
+        // take the card to find the text and add a picture to it
         val card: CardView = cardLayout.findViewById(R.id.mainConnCard)
 
-        //val image: ImageView = card.findViewById(R.id.cardImage) //in image vom adauga src imagiea de profil a prietenului , vedem cum o adaugam (unde stocam imaginea in prima faza!)
+        //val image: ImageView = card.findViewById(R.id.cardImage) //Image we will add the friend's profile image, we see how we add it (where we store the image in the first phase!)
         val cardUsername: TextView = card.findViewById(R.id.cardText)
         val buildText: String? = dataVector[3] //username friend
 
         cardUsername.text = buildText
         card.setOnClickListener {
 
-            val intent = Intent("InterfaceActivity")
+            val intent = Intent("UserActivity")
 
-            //asa transferam informatii activitati , prin intent.putExtra
+            // so we transfer information activities, through intent.putextra
             sUser = dataVector[0]
             sUKey = dataVector[1]
             sUsername = dataVector[3]
             sId = dataVector[4]
 
-            //ca sa putem deschide o noua activitate dintro functie externa
+            // so we can open a new activity from a external function
             intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
 
@@ -648,12 +565,11 @@ class CardViews(): AppCompatActivity() {
 
                 cardMainBoolean = false
 
-                //chemam o functie ca sa putem adauga buttonLayout mai ordonat , decat sa punem totul aici
+                // call a function so we can add buttonlayout more, than to put everything here
                 removeFromFriendsCard(dataVector[3], dataVector[0], activityLayout, buttonLayout, cardLayout , constraintLayout)
 
             }
 
-            //setOnLongClickLiserner ii trebue expresie lambda , trebuie sa returneze ceva ca sa o putem folosi
             true
         }
 
@@ -663,17 +579,16 @@ class CardViews(): AppCompatActivity() {
     @SuppressLint("InflateParams")
     fun connUiCard(dataVector: MutableList<String?>, activityLayout: LinearLayout, context: Context , constraintLayout: ConstraintLayout) {
 
-        //am folosit inflater ca sa utilizam acceasi interfata a cardului din fisierul main_conn_card de mai multe ori
         val inflater = LayoutInflater.from(context)
         val cardLayout = inflater.inflate(R.layout.main_conn_card , null) as ViewGroup
 
-        //layoutul meniului cu butoane , il dam functiei sa il afiseze pe ecran
+        // Layout of the menu with buttons, give it to the function to display it on the screen
         val buttonLayout = inflater.inflate(R.layout.conn_main_remove_block_prompt , null) as ViewGroup
 
-        //luam cardul pentru a gasi textul si a adauga o imagine in el
+        // take the card to find the text and add a picture to it
         val card: CardView = cardLayout.findViewById(R.id.mainConnCard)
 
-        //val image: ImageView = card.findViewById(R.id.cardImage) //in image vom adauga src imagiea de profil a prietenului , vedem cum o adaugam (unde stocam imaginea in prima faza!)
+        //val image: ImageView = card.findViewById(R.id.cardImage) // Image we will add the friend's profile image, we see how we add it (where we store the image in the first phase!)
         val cardUsername: TextView = card.findViewById(R.id.cardText)
         val buildText: String = dataVector[0] + " WITH ID:" + dataVector[2]
 
@@ -684,7 +599,7 @@ class CardViews(): AppCompatActivity() {
 
                 cardConnBoolean = false
 
-                //chemam o functie ca sa putem adauga buttonLayout mai ordonat , decat sa punem totul aici
+                // call a function so we can add buttonlayout more, than to put everything here
                 connAcceptRefuseCard(dataVector[3], dataVector[0], activityLayout, buttonLayout, cardLayout, constraintLayout)
 
             }
@@ -697,12 +612,11 @@ class CardViews(): AppCompatActivity() {
 
                 cardConnBoolean = false
 
-                //chemam o functie ca sa putem adauga buttonLayout mai ordonat , decat sa punem totul aici
+                // call a function so we can add buttonlayout more, than to put everything here
                 blockConnRequest(dataVector[0]!!, activityLayout, buttonLayout, cardLayout, constraintLayout)
 
             }
 
-            //setOnLongClickLiserner trebuie sa returneze ceva ca sa il putem folosi
             true
         }
 
@@ -727,10 +641,10 @@ class CardViews(): AppCompatActivity() {
 
         acceptButton.setOnClickListener {
 
-            //acceptam conn requestul aici
+            // we accept the reequest here
             Transmission.acceptRequest(userEmail)
 
-            //distrugem buttonLayout si cardul creat butoanelor, pentru ca nu ne mai trebuie
+            // we destroy Buttonlayout and the card created to the buttons, because we don't need
             constraintLayout.removeView(buttonLayout)
             activityLayout.removeView(cardLayout)
 
@@ -739,17 +653,17 @@ class CardViews(): AppCompatActivity() {
 
         denyButton.setOnClickListener {
 
-            //refuzam conn requestul aici
+            // we refuse Conn Request here
             Transmission.refuseRequest(userEmail)
 
-            //distrugem buttonLayout si cardul creat butoanelor, pentru ca nu ne mai trebuie
+            // we destroy Buttonlayout and the card created to the buttons, because we don't need
             constraintLayout.removeView(buttonLayout)
             activityLayout.removeView(cardLayout)
 
             cardConnBoolean = true
         }
 
-        constraintFather.setOnClickListener {//buttonLayout father
+        constraintFather.setOnClickListener {//buttonLayoutFather
 
             constraintLayout.removeView(buttonLayout)
 
@@ -778,10 +692,10 @@ class CardViews(): AppCompatActivity() {
 
         refuse.setOnClickListener {
 
-            //acceptam conn requestul aici
+            // we accept the request here
             Transmission.refuseRequest(userEmail)
 
-            //distrugem buttonLayout si cardul creat butoanelor, pentru ca nu ne mai trebuie
+            // we destroy Buttonlayout and the card created to the buttons, because we don't need them anymore
             constraintLayout.removeView(buttonLayout)
             activityLayout.removeView(cardLayout)
 
@@ -790,13 +704,13 @@ class CardViews(): AppCompatActivity() {
 
         goBack.setOnClickListener {
 
-            //distrugem buttonLayout si cardul creat butoanelor, pentru ca nu ne mai trebuie
+            // we destroy Buttonlayout and the card created to the buttons, because we don't need them anymore
             constraintLayout.removeView(buttonLayout)
 
             cardMainBoolean = true
         }
 
-        constraintFather.setOnClickListener {//buttonLayout father
+        constraintFather.setOnClickListener { // buttonLayout father
 
             constraintLayout.removeView(buttonLayout)
 
@@ -825,10 +739,10 @@ class CardViews(): AppCompatActivity() {
 
         refuse.setOnClickListener {
 
-            //acceptam conn requestul aici
+            // we accept the reequest here
             Transmission.blockRequest(userEmail)
 
-            //distrugem buttonLayout si cardul creat butoanelor, pentru ca nu ne mai trebuie
+            // we destroy Buttonlayout and the card created to the buttons, because we don't need
             constraintLayout.removeView(buttonLayout)
             activityLayout.removeView(cardLayout)
 
@@ -837,7 +751,7 @@ class CardViews(): AppCompatActivity() {
 
         goBack.setOnClickListener {
 
-            //distrugem buttonLayout si cardul creat butoanelor, pentru ca nu ne mai trebuie
+            // we destroy Buttonlayout and the card created to the buttons, because we don't need
             constraintLayout.removeView(buttonLayout)
 
             cardConnBoolean = true
@@ -879,10 +793,10 @@ class Random() {
 
 class HasInternet() {
 
-    //pt a verifica accesul la internet
+    // to check the internet access
     fun hasInternetAccess(context: Context): Boolean {
 
-        Log.d("HasInternet","hasInternetAccess")
+        Log.d("HasInternet","hasInternetAccess used!")
 
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork
@@ -893,7 +807,7 @@ class HasInternet() {
 
 }
 
-class Time {  // TODO: tot nu avem timezone , lasam asa pentru moment
+class Time { // Todo: We still have no timezone, we leave this as it is for the moment.
 
     fun convertTS(messageTimeStamp: String): String {
 

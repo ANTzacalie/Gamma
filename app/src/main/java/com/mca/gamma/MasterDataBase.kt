@@ -12,11 +12,12 @@ import androidx.security.crypto.MasterKey
 import androidx.security.crypto.MasterKeys
 import kotlin.Exception
 
-///////***** status ***** ///////MAP
-//---> STAND_BY -> pentru respectivele actiuni in cazul in care internetul / userul respectiv nu este conectat la server
-//---> RECEIVED+ / RECEIVED++ -> mesajul a fost scris si trimis / vazut , primit
-//---> CONNECTED -> userul a devenit prieten (doar in tabelul prieteni !!!)
-///////***** status ***** ///////
+
+//////// ***** Status ***** ////// map
+// ---> stand_by-> for those actions if the respective internet /user is not connected to the server
+// ---> Received+ / Received ++-> The message was written and sent / seen, received
+// ---> Connected-> the user has become a friend (only in the friends table !!!)
+/////// ***** Status ***** ///////
 
 
 // keystore class
@@ -24,8 +25,8 @@ class AndroidLocalStorage(private val context: Context) {
 
     private val masterKeyAlias = MasterKey.Builder(context).setKeyGenParameterSpec(MasterKeys.AES256_GCM_SPEC).build()
 
-    fun storeLoginData(email: String?, serverAccessCode: String?, username : String?, id : String?) {
-        Log.d("LOCAL STORAGE","SAVE ESUI USED")
+    fun saveLD(email: String?, serverAccessCode: String?, username : String?, id : String?) {
+        Log.d("LOCAL STORAGE","SAVE LOGIN_DATA USED")
 
         val sharedPreferences = EncryptedSharedPreferences.create(
             context,
@@ -41,6 +42,37 @@ class AndroidLocalStorage(private val context: Context) {
             .putString("username" , username)
             .putString("id",id)
             .apply()
+
+    }
+
+    fun saveHP(fullServerText: String?) {
+        Log.d("LOCAL STORAGE","SAVE HOST_AND_PORT USED")
+
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            context,
+            "serverAddress",
+            masterKeyAlias,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+        sharedPreferences.edit()
+            .putString("hp" , fullServerText)
+            .apply()
+
+    }
+
+    fun getHP(): String? {
+
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            context,
+            "serverAddress",
+            masterKeyAlias,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+        return sharedPreferences.getString("hp", null)
 
     }
 
@@ -106,7 +138,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
     override fun onCreate(db: SQLiteDatabase?){}
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int){}
 
-    fun tableCreatorMain() { //TODO: VOM IMPLEMENTA NOUA BAZA DE DATE , VOM CREEA TABELUL O SINGURA DATA LA CONECTARE! SQLCIPHER
+    fun tableCreatorMain() {
 
         val db = writableDatabase
 
@@ -127,6 +159,23 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
         db.execSQL(createTableSql)
         db.close()
+    }
+
+    fun tableCreatorAppSettings() {
+
+        val db = writableDatabase
+
+        val createTableSql = """
+            CREATE TABLE IF NOT EXISTS settings (
+                id INTEGER PRIMARY KEY,
+                ALL_NOTIFY INT,
+                BLOCK_STATE INT
+            );
+        """
+
+        db.execSQL(createTableSql)
+        db.close()
+
     }
 
     //executed each time a new connction with another user is made
@@ -254,7 +303,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
             }
 
-            db.insert(userId, null, values)
+            if (userId != null) {
+                db.insert(userId, null, values)
+            }
             db.close()
 
         }catch (e:Exception) {
@@ -282,7 +333,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val where = "USER = ? AND MESSAGE = ? AND ID = ?"
             val whereArgs = arrayOf(userEmail, message, messageId)
 
-            db.update(userId, update, where, whereArgs)
+            if (userId != null) {
+                db.update(userId, update, where, whereArgs)
+            }
             db.close()
 
         }catch (e:Exception) {
@@ -399,9 +452,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("USER_EMAIL")
             val where = "USER_EMAIL = ?"
             val whereArgs = arrayOf(userEmail)
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
-            cursor?.use {
+            cursor.use {
 
                 while (cursor.moveToNext()) {
 
@@ -414,6 +467,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
+
             db.close()
 
         }catch (e:Exception) {
@@ -439,9 +493,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
             val where = "STATUS = ?"
             val whereArgs = arrayOf("CONNECTED")
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
-            cursor?.use {
+            cursor.use {
 
                 cursor.moveToFirst()
                 val count: Int = cursor.count
@@ -460,7 +514,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
-            cursor?.close(); db.close()
+            cursor.close(); db.close()
 
             return returnArray
 
@@ -474,7 +528,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
     }
 
-    //message loader terminat partial , pentru cazul nostru de acum
+    //message loader is partially finished , needs more work to load messages in order by date and hour
     @SuppressLint("Range")
     fun messageLoader(id: String?) : MutableList<MutableList<String?>> {
 
@@ -483,36 +537,42 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             // TODO: MESAJELE TREBUIE ORDONATE IN FUNCTIE DE DATA SI ORA!
 
         */
+
         val db = readableDatabase; Log.d("MESSAGE_LOADER" , "TRIGGERED")
         var messageArray: MutableList<MutableList<String?>> = MutableList(0) { MutableList(3) { null } }
 
         try {
 
             val columns = arrayOf("USER , MESSAGE , STATUS , TS, ID")
-            val cursor: Cursor? = db.query(id , columns, null , null , null , null , null) // VOM AVEA UN MAXIM , VEDEM!
+            if(id != null) {
 
-            cursor?.use {
 
-                cursor.moveToFirst() // ne ducem la prima linie ca sa luam COUNT("*")
-                val count: Int = cursor.count
-                messageArray = MutableList(count) { MutableList(5) {null} }
+                val cursor: Cursor = db.query(id , columns, null , null , null , null , null)
 
-                cursor.moveToLast() //ne ducem la ultima linie
-                for (rows in 0 until count step 1) {
+                cursor.use {
 
-                    messageArray[rows][0] = cursor.getString(cursor.getColumnIndex("USER"))
-                    messageArray[rows][1] = cursor.getString(cursor.getColumnIndex("MESSAGE"))
-                    messageArray[rows][2] = cursor.getString(cursor.getColumnIndex("STATUS"))
-                    messageArray[rows][3] = cursor.getString(cursor.getColumnIndex("TS"))
-                    messageArray[rows][4] = cursor.getString(cursor.getColumnIndex("ID"))
+                    cursor.moveToFirst() // WE MOVE TO FIRST LINE
+                    val count: Int = cursor.count
+                    messageArray = MutableList(count) { MutableList(5) {null} }
 
-                    cursor.moveToPrevious() //ca sa ne ducem la linia din urma
+                    cursor.moveToLast() // WE MOVE TO THE LAST LINE
+                    for (rows in 0 until count step 1) {
+
+                        messageArray[rows][0] = cursor.getString(cursor.getColumnIndex("USER"))
+                        messageArray[rows][1] = cursor.getString(cursor.getColumnIndex("MESSAGE"))
+                        messageArray[rows][2] = cursor.getString(cursor.getColumnIndex("STATUS"))
+                        messageArray[rows][3] = cursor.getString(cursor.getColumnIndex("TS"))
+                        messageArray[rows][4] = cursor.getString(cursor.getColumnIndex("ID"))
+
+                        cursor.moveToPrevious() //ca sa ne ducem la linia din urma
+
+                    }
 
                 }
+                cursor.close();
 
             }
-
-            cursor?.close(); db.close()
+            db.close()
 
             return messageArray
 
@@ -536,23 +596,29 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("MESSAGE")
             val where = "STATUS = ?"
             val whereArgs = arrayOf("STAND_BY")
-            val cursor: Cursor? = db.query(id , columns, where , whereArgs , null , null , null)
 
-            cursor?.use {
+            if(id != null) {
 
-                cursor.moveToFirst() //ne ducem la prima linie
-                val count = cursor.count
+                val cursor: Cursor = db.query(id, columns, where, whereArgs, null, null, null)
 
-                messageList = MutableList(count) { null }
+                cursor.use {
 
-                for (pos in 0 until count step 1) {
+                    cursor.moveToFirst() //ne ducem la prima linie
+                    val count = cursor.count
 
-                    messageList[pos] = cursor.getString(cursor.getColumnIndex("MESSAGE"))
+                    messageList = MutableList(count) { null }
 
-                    cursor.moveToNext() //ca sa ne ducem la linia urmatoare
+                    for (pos in 0 until count step 1) {
+
+                        messageList[pos] = cursor.getString(cursor.getColumnIndex("MESSAGE"))
+
+                        cursor.moveToNext() //ca sa ne ducem la linia urmatoare
+
+                    }
 
                 }
 
+                cursor.close();
             }
 
             db.close()
@@ -579,23 +645,29 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("ID")
             val where = "STATUS = ?"
             val whereArgs = arrayOf("STAND_BY")
-            val cursor: Cursor? = db.query(id , columns, where , whereArgs , null , null , null )
 
-            cursor?.use {
+            if(id != null) {
 
-                cursor.moveToFirst() //ne ducem la prima linie
-                val count = cursor.count
+                val cursor: Cursor = db.query(id, columns, where, whereArgs, null, null, null)
 
-                messageList = MutableList(count) { null }
+                cursor.use {
 
-                for (pos in 0 until count step 1) {
+                    cursor.moveToFirst() //ne ducem la prima linie
+                    val count = cursor.count
 
-                    messageList[pos] = cursor.getString(cursor.getColumnIndex("ID"))
+                    messageList = MutableList(count) { null }
 
-                    cursor.moveToNext() //ca sa ne ducem la linia urmatoare
+                    for (pos in 0 until count step 1) {
+
+                        messageList[pos] = cursor.getString(cursor.getColumnIndex("ID"))
+
+                        cursor.moveToNext() //ca sa ne ducem la linia urmatoare
+
+                    }
 
                 }
 
+                cursor.close();
             }
 
             db.close()
@@ -622,25 +694,30 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("TS")
             val where = "STATUS = ?"
             val whereArgs = arrayOf("STAND_BY")
-            val cursor: Cursor? = db.query(id , columns, where , whereArgs , null , null , null )
 
-            cursor?.use {
+            if(id != null) {
 
-                cursor.moveToFirst() //ne ducem la prima linie
-                val count = cursor.count
+                val cursor: Cursor = db.query(id, columns, where, whereArgs, null, null, null)
 
-                timeStamps = MutableList(count) { null }
+                cursor.use {
 
-                for (pos in 0 until count step 1) {
+                    cursor.moveToFirst() //ne ducem la prima linie
+                    val count = cursor.count
 
-                    timeStamps[pos] = cursor.getString(cursor.getColumnIndex("TS"))
+                    timeStamps = MutableList(count) { null }
 
-                    cursor.moveToNext() //ca sa ne ducem la linia urmatoare
+                    for (pos in 0 until count step 1) {
+
+                        timeStamps[pos] = cursor.getString(cursor.getColumnIndex("TS"))
+
+                        cursor.moveToNext() //ca sa ne ducem la linia urmatoare
+
+                    }
 
                 }
 
+                cursor.close();
             }
-
             db.close()
 
             return timeStamps
@@ -665,9 +742,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("USER_EMAIL", "CONN_KEY", "USER_ID", "USER_NAME", "STATUS", "TYPE")
             val where = "TYPE = ?"
             val whereArgs = arrayOf("REQUEST_EXTERNAL")
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
-            cursor?.use {
+            cursor.use {
 
                 cursor.moveToFirst()
                 val count = cursor.count
@@ -687,6 +764,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
+
+            cursor.close(); db.close()
+
             return  connArray
 
         } catch (e: Exception) {
@@ -707,7 +787,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("CONN_KEY")
             val where = "USER_EMAIL = ?"
             val whereArgs = arrayOf(userEmail)
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
             cursor?.use {
 
@@ -727,7 +807,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
             }
 
-            db.close()
+            cursor.close(); db.close()
 
         } catch (e:Exception){
 
@@ -749,9 +829,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("TODO")
             val where = "USER_EMAIL = ?"
             val whereArgs = arrayOf(userEmail)
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
-            cursor?.use {
+            cursor.use {
 
                 while (cursor.moveToNext()) {
 
@@ -760,7 +840,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
-            db.close()
+            cursor.close(); db.close()
 
         } catch (e:Exception){
 
@@ -782,9 +862,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("BLOCK_STATE")
             val where = "USER_EMAIL = ?"
             val whereArgs = arrayOf(userEmail)
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
-            cursor?.use {
+            cursor.use {
 
                 while (cursor.moveToNext()) {
 
@@ -794,7 +874,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
-            db.close()
+            cursor.close(); db.close()
 
         } catch (e:Exception){
 
@@ -816,9 +896,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("NOTIFY_STATE")
             val where = "USER_EMAIL = ?"
             val whereArgs = arrayOf(userEmail)
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
-            cursor?.use {
+            cursor.use {
 
                 while (cursor.moveToNext()) {
 
@@ -828,7 +908,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
-            db.close()
+            cursor.close(); db.close()
 
         } catch (e:Exception){
 
@@ -850,9 +930,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("STATUS")
             val where = "USER_EMAIL = ?"
             val whereArgs = arrayOf(userEmail)
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
-            cursor?.use {
+            cursor.use {
 
                 while (cursor.moveToNext()) {
 
@@ -861,7 +941,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
-            db.close()
+            cursor.close(); db.close()
 
         } catch (e:Exception){
 
@@ -883,10 +963,10 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("USER_NAME")
             val where = "USER_EMAIL = ?"
             val whereArgs = arrayOf(userEmail)
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
 
-            cursor?.use {
+            cursor.use {
 
                 while (cursor.moveToNext()) {
 
@@ -895,7 +975,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
-            db.close()
+            cursor.close(); db.close()
 
         } catch (e:Exception) {
 
@@ -918,9 +998,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("USER_ID")
             val where = "USER_EMAIL = ?"
             val whereArgs = arrayOf(userEmail)
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
-            cursor?.use {
+            cursor.use {
 
                 while (cursor.moveToNext()) {
 
@@ -929,7 +1009,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
-            db.close()
+            cursor.close(); db.close()
 
         } catch (e:Exception){
 
@@ -951,9 +1031,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("CONN_KEY")
             val where = "USER_EMAIL = ?"
             val whereArgs = arrayOf(userEmail)
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs , null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs , null, null, null)
 
-            cursor?.use {
+            cursor.use {
 
                 while (cursor.moveToNext()) {
 
@@ -962,7 +1042,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
-            db.close()
+            cursor.close(); db.close()
 
         }catch (e:Exception){
 
@@ -983,10 +1063,10 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("USER_EMAIL")
             val where = "STATUS = ?"
             val whereArgs = arrayOf("STAND_BY")
-            val cursor: Cursor? = db.query("main", columns, where, whereArgs, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
             val backList: MutableList<String?> = mutableListOf()
-            cursor?.use {
+            cursor.use {
 
                 while (cursor.moveToNext()) {
 
@@ -995,7 +1075,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
-            db.close()
+            cursor.close(); db.close()
 
             return backList
 
@@ -1015,10 +1095,10 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
         try {
 
             val columns = arrayOf("USER_ID")
-            val cursor: Cursor? = db.query("main", columns, "STATUS = ?", arrayOf("CONNECTED"), null, null, null)
+            val cursor: Cursor = db.query("main", columns, "STATUS = ?", arrayOf("CONNECTED"), null, null, null)
 
             val backList: MutableList<String?> = mutableListOf()
-            cursor?.use {
+            cursor.use {
 
                 Log.d("GET MAIN LIST OF ID", "WORKING!")
                 while (cursor.moveToNext()) {
@@ -1028,7 +1108,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
-            db.close()
+            cursor.close(); db.close()
 
             return backList
 
@@ -1050,15 +1130,21 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("MESSAGE")
             val where = "STATUS = ?"
             val whereArgs = arrayOf("STAND_BY")
-            val cursor: Cursor? = db.query(userId, columns, where, whereArgs, null, null, null)
 
-            cursor?.use {
+            if(userId != null) {
 
-                while (cursor.moveToNext()) {
+                val cursor: Cursor = db.query(userId, columns, where, whereArgs, null, null, null)
 
-                   return true
+                cursor.use {
+
+                    while (cursor.moveToNext()) {
+
+                        return true
+
+                    }
 
                 }
+                cursor.close();
 
             }
             db.close()
@@ -1083,9 +1169,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("USER_EMAIL")
             val where = "USER_ID = ?"
             val whereArgs = arrayOf(userId)
-            val cursor : Cursor? = db.query("main" ,columns, where , whereArgs , null , null , null)
+            val cursor : Cursor = db.query("main" ,columns, where , whereArgs , null , null , null)
 
-            cursor?.use{
+            cursor.use{
 
                 while(cursor.moveToNext()){
 
@@ -1095,7 +1181,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
             }
 
-            db.close()
+            cursor.close(); db.close()
 
         }
         catch (e:Exception) {
@@ -1117,9 +1203,9 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
             val columns = arrayOf("TYPE")
             val where = "USER_EMAIL = ?"
             val whereArgs = arrayOf(userEmail)
-            val cursor : Cursor? = db.query("main" ,columns, where , whereArgs , null , null , null)
+            val cursor : Cursor = db.query("main" ,columns, where , whereArgs , null , null , null)
 
-            cursor?.use{
+            cursor.use{
 
                 while(cursor.moveToNext()){
 
@@ -1129,7 +1215,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
             }
 
-            db.close()
+            cursor.close(); db.close()
 
         }
         catch (e:Exception) {

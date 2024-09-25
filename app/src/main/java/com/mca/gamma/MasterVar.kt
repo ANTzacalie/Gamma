@@ -2,21 +2,26 @@ package com.mca.gamma
 
 import java.time.ZoneId
 
-// BrodCast Reciver , o folosim acolo sa stim numarul de connectari/deconectari de la internet
-var used: Int = 0 // un simplu contor global
 
-// nu am habar daca o folosim cum trebuie , dar e aici
+// SERVER ADDRESS
+var serverAddress: String? = null
+var holdServerAddress: Boolean = false
+
+// Broadcast Receiver, we use it there to know the number of connections/disconnections from the Internet
+var used: Int = 0 // a simple global meter
+
+// I have no idea if we use it properly, but it's here
 var systemTimeZone: ZoneId? = null
 //
 
-///// variabile stocate local in keystore
-var serverAccessCode: String? = "" // codul unic de acces la server , daca userul vrea poate fi stocat in memorie cu keystore
+///// variables stored locally in Keystore
+var serverAccessCode: String? = "" // the unique access code to the server, if the user wants can be stored in memory with Keystore
 
-var localUserEmail: String? = "" // aici stocam emailul userului , daca userul vrea il stocam in memorie cu keystore
+var localUserEmail: String? = "" // here we store the user's email, if the user wants to stock in memory with Keystore
 
-var localUsername: String? = "" //aici stocam usernamul , si daca userul vrea il stocam in memorie cu keystore
+var localUsername: String? = "" // here we stock the usernam, and if the user wants to stock in memory with Keystore
 
-var localId: String? = "" //id unic al userului
+var localId: String? = "" // unique user of the user
 /////
 
 ///USER_COMM_UI
@@ -24,9 +29,10 @@ var sUser: String? = null
 var sId: String? = null
 var sUsername: String? = null
 var sUKey: String? = null
-var globalSpecificUser: String? = "" //prietenul cu care vorbesti (specific pt actualizarea interfatei)
-var globalSpecificDbId = "" //*nu ne trebuie
-var globalSpecificKey = "" //*nu ne trebuie
+var globalSpecificUser: String? = "" // the friend you are talking to (specific for the interface update)
+var globalSpecificDbId = "" //*We don't need
+var globalSpecificKey = "" //*We don't need
+var backToParentFragment: Boolean = false
 ///
 
 //###.DB
@@ -42,85 +48,82 @@ var cardMainBoolean: Boolean = true
 var changeUsernameBoolean: Boolean = true
 //
 
-//##.obj
-var permitObjMain: Boolean = false //MainUI , ca sa putem actualiza interfata
+//##. Tranmission obj
+var permitObjMain: Boolean = false // Mainde, so we can update the interface
 
-var permitObjConn: Boolean = false //ConnUI , ca sa putem actualiza interfata
+var permitObjConn: Boolean = false // understand, so we can update the interface
 
-var permitObjUser: Boolean = false //UserUI , ca sa putem actualiza interfata
+var permitObjUser: Boolean = false // users, so we can update the interface
 
-var permitActivityAfterLogin: Boolean = true //Necesar la prima conectare la server(USER) , apoi necesar pentru ConnectivityObject ca sa nu intervina cu MasterActivity
+var permitActivityAfterLogin: Boolean = true // required at the first connection to the server (user), then required for ConnectivityBject so as not to intervene with Masteractivity
 
-var permitObjInternetAcess: Boolean = false //Connectivity object , asta ne arata daca exista internet
-//##.obj
+var permitObjInternetAcess: Boolean = false // Connectivity Object, this shows us if there is internet
+//##. Transmission obj
 
 
-// TODO: MASTER COMMENT
-//  -- MESAJELE CU IMAGINI / LINKURI / YOUTUBE LINK VOR FI SEPARATE DE MESAJUL NORMAL , VEDEM CUM FACEM CU ASTA
+// *Version 2.89 gamma *///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*
 
 /*
-    TODO: LOGS -->>
-        - AM GASIT ERORI DE SCRIERE IN SERVER , AM CORECTAT UNA , DE CONTINUAT TESTAREA MESAJELOR
-        - AM REZOLVAT PROBLEMA CU STB MESSAGES , PLUS AM TESTAT MESSAGE CHECK , TOATE MESAJELE SUNT RAPORTATE INAPOI DUPA ID!
-        -
-*/
 
-/*VERSION 2.80 */////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*
+    TODO: SERVER DATA TRANSFER TEST IS FINISHED , ANDROID MEDIA FILES / OTHER FILES TEST FINISHED AND OBJECT LOGIC IS CORRECT FOR BOTH SERVICE AND APPLICATION ACTIVITY!
+        --- IMPLEMENT ANDROID STORAGE FUNCTIONS
+        --- IMPLEMENT SERVER FILE_TRANSFER MODIFICATIONS
+        --- IMPLEMENT VIDEO/IMAGE/TEXT VIEWR AND FILE SEND / ADD / DELETE
+        --- ALL FILES WILL BE NAMED WITH A RANDOM GENERATED NAME!
+        --- STORAGE OF FILES WILL BE IN APP PRIVATE STORAGE!
+        --- DATABASE WILL BE STORED IN THE SAME PLACE(NEED TESTING ETC..)
 
-// TODO: DE ADAUGAT LA INTRAREA IN APLICATIE DOMAINE/IP_NAME + PORT
-// TODO: DE IMPLEMENTAT APP_PASSWORD , PAROLA ESTE STOCATA IN KEYSTORE , DAR PAROLA VA FI SETATA IN SETARI , NU LA INITIALIZAREA APLICATIEI
-// TODO: DE INTEGRAT SETARILE APLICATIEI SI RESTUL DE INTERFATA MAIN(BLACK LIST SI Grups(VA AVEA TABEL SEPARAT IN DB))
+ */
 
-// TODO MASTER:
-    // -- IMPLEMENTEAZA FRAGMENT VIEW PENTRU:
-                // -- REGISTER(FATHER ACTIVITY) => LOGIN , PASSWORD_CHANGE , PASSWORD_CONFIRM , CODE_VERIFICATION SI ACCOUNT REGISTERED.
-                   // -- AM TERMINAT CE E MAI SUS , AM ADAUGAT BUTON DE GO BACK SI TOATE CELE , AM TESTAT , TRECEM LA URMATOAREA
+// Todo: Integrate the application settings and the rest of the Main interface (Black List and Groups (will have a separate table in DB for settings only))
+// Todo Master:
+    // - implements View fragment for:
+        // - for main_activity (Father Activity) => Black_list, Groups
+        // - we start when we finish the rest of the activities!
 
+// TODO: CHECK IF SERVER IS ONLINE!
+// TODO: IMPLEMNET SETTINGS TABLE IN DB
+// TODO: FIX MESSAGE_DATE FOR DIFFERENT TIME ZONES
+    // AND ALSO MAKE THE CHAT_CARD BE SIMETRICAL TO THE OBJECTS INSIDE
 
-                // -- PENTRU MAIN_ACTIVITY(FATHER ACTIVITY) => CONN_REQUEST , BLACK_LIST , LOGS
-                    // -- INCEPEM ATUNCI CAND TERMINAM RESTUL ACTIVITATILOR!
-
-
-
-
-
+// TODO: TRANSLATE TRANSMISSION AND DATABSE COMMENTS
 
 
-
-
+// --->>> TODO: THINK WHAT CAN BE ADDED TO THE INDIVIDUAL SETTINGS INTERFACE , TO NOT LET THAT MUCH EMPTY SPACE THERE
+            // -- MEDIA STUFF MAYBE , A VIEWER FOR MEDIA FILES(PICTURES AND VIDEOS ONLY) , TODO: IT WILL BE ADDED
 
 
 
+// Todo: Another time, somewhere in August AND OCTOBER****:
+// Todo: to start the logical implementation to support files and images, to add the structures for retention of images where you need
+// Todo: to implement Link View / YouTube View (Video Loader), Redirect Fun + Elimination Messages,
+// Todo: The application will not support the transfer of files (until the Alpha 3.0 version)
+// Todo: to be solved with Masterservice.kt and with the exit from the application etc ...
+// Todo: Implemented Group + Group Chat, separate table in the database, more than a separated database!
+// Todo: Not necessarily*, add a Hart-Beat System to know if the server is offline/online, to reconnect to it, we see if it does it automatically!
+// Todo: The messages must be ordered according to the date and time!
+// Todo: Add message delete , only for local user!
+// TODO: ADD NOTIFICATIONS TO THE APP !
+        // -- BE ABLE TO RESPOND TO MESSAGES IN NOTIFICATIONS !
+// - messages with pictures / links / youtube link will be separated from the normal message, we see how we do it
 
 
-//
-// TODO: ALTA DATA , UNDEVA IN LUNA AUGUST:
-// TODO: DE INCEPUT IMPLEMENTAREA LOGICE PENTRU A SUSTINE FISIERE SI IMAGINI , DE ADAUGAT STRUCTURILE PENTRU RETINEREA IMAGINILOR ACOLO UNDE TREBUIE
-// TODO: de implementat link view / youtube view(video loader) , redirect fun + eliminare mesaje,
-// TODO: aplicatia nu va suporta transferul de fisiere(pana la versiunea alpha 3.0)
-// TODO: DE REZOLVAT CU MasterService.kt si cu iesirea din aplicatie etc...
-// TODO: DE IMPLEMENTAT GROUP + GROUP CHAT , TABEL SEPARAT IN BAZA DE DATE , MAI DE GRABA O BAZA DE DATE SEPARATA!
-// TODO: NU NEAPARAT* , SA ADAUGI UN HART-BEAT SYSTEM SA STIM DACA SERVERUL ESTE OFFLINE/ONLINE , CA SA NE RECONECTAM LA EL , VEDEM DACA O FACE AUTOMAT!
-// TODO: MESAJELE TREBUIE ORDONATE IN FUNCTIE DE DATA SI ORA!
+// Todo , what I have implemented:
+// Users_settings as fragment to user_ui
+// Restored the prompts of refuse/block
+// Added and implemented Message ID + Todo: Testing
+// Added Forgot Password
+// Restored message_card_sr
+// Restored Register/Login/Change_PASSWORD
+// Remade the login / register / code_ver / password_change / register_finis activitys into fragments , for more smooth transition
+// Setup , there the user inputs the hostname and port
+// Remade some stuff in setup activitys/fragments
+// Made user_settings a fragment of UserActivity
+// Modified chnage_username fun to match the new user_settings fragment
+// ADDED CHNAGE USERNAME AS FRAGMENT TO SETTINGS_USERS
+// MADE THE BUTTONS TURN RED AFTER PRESS WHILE PROCESSING
+// ADED BACK BUTTON TO REGISTER ACTIVITY TO BE ABLE TO GO BACK TO INIT
 
 
-
-
-//TODO: CE AM IMPLEMENTAT:
-    //SWITCHURILE IN USER_I SETTINGS
-    //AM REFACUT PROMPTURILE DE REFUSE/BLOCK
-    //AM ADAUGAT SI IMPLEMENTAT MESSAGE ID + TODO: DE TESTAT
-    //AM ADAUGAT SYSTEMUL DE IESIRE LA FUNCTIILE ACTIVITY
-    //AM ADAUGAT FORGOT PASSWORD , AM ADAUGAT CHANGE USERNAME(LOCAL)
-    //AM REFACUT MESSAGE_CARD_SR , LE-AM SI TESTAT!
-    //AM REFACUT REGISTER/LOGIN/CHANGE_PASSWORD SA FIE SMOOTH , FOLOSINDUMA DE FRAGMENTS
-
-
-//todo: SCHEME DACA UITI:
-//CA SA MARIM SPATIUL UNDE SCRIE USERUL MESAJUL , ADAUGAM DINAMIC IN COD LA INPUT TEXT : inputType="textMultiline" si maxHeight = .... ceva
-//BUTOANELE IN CONN_MAIN_BUTTON_SELECTOR AU FOST FACUTE ROUND FOLOSINDUNE DE SHAPE! ===>>> urmatoarele carduri cu butoane folosim acceasi schema
-//AM FACUT SCHEMA DE IESIT DIN CARD , ATUNCI CAND APESI IN AFARA LUI: IEI CONSTRAINT LAYOUTUL INFLATED SI II FACI LISENER (CA SA DISTRUGI INTERFATA CREATA), DAR TREBUI SI UN CHILD PENTRU ELEMENTE , SI EL ARE NEVOI DE LISENER(DOAR DE FATADA) CA SA NU FIE DISTRUS;
-//SCHEMA: DACA ACTIVITATEA ARE MAI MULTE LAYOUTURI SCHIMBAM LAYOUTUL TOT CU SET CONTENT VIEW!
-
-
-
+// Todo , what I have partially implemented
+// IMPLEMENTED LOCAL USER SETTINGS , NOT FINISHED THO // TODO: DE TESTAT

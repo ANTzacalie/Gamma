@@ -54,7 +54,7 @@
     <string name="todo">TODO</string>
     <string name="remove">REMOVE</string>
     <string name="remove_and_block">REMOVE AND BLOCK</string>
-    <string name="change_username">Change Username</string>
+    <string name="change_username">Change username</string>
     <string name="new_username">New Username</string>
     <string name="change">CHANGE</string>
     <string name="forgot_password">Forgot password</string>
@@ -65,4 +65,13 @@
     <string name="back">BACK</string>
     <string name="b">B</string>
     <string name="groups">Groups</string>
+    <string name="port_number_ex_433">Port number, ex: 433</string>
+    <string name="hostname_ex_mydomain_xyz_ipv4">Hostname, ex: myDomain.xyz/IPv4</string>
+    <string name="change_hostname_and_port">Change hostname and port</string>
+    <string name="add_password_fingerprint_unlock">Add password/fingerprint unlock</string>
+    <string name="change_profile_picture">Change profile picture</string>
+    <string name="get_database">Get database</string>
+    <string name="deleate_account">Deleate account</string>
+    <string name="about_the_app">About the app</string>
+    <string name="block_all_incoming_requests">Block all incoming requests</string>
 </resources>

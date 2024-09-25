@@ -43,7 +43,7 @@
             android:exported="true">
 
             <intent-filter>
-                <action android:name="InterfaceActivity" />
+                <action android:name="UserActivity" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -89,7 +89,9 @@
             </intent-filter>
         </receiver>
 
-        <service android:name="com.mca.gamma.SocketBackgroundService" />
+        <service android:name="com.mca.gamma.SocketBack"
+            android:enabled="true"
+            android:exported="false"/>
 
 </application>
 
