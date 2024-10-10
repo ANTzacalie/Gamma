@@ -87,9 +87,15 @@ object Transmission : AppCompatActivity() {
     }
     fun start() {
 
-        socket.connect();
-        createSocketId();
+        socket.connect()
+        createSocketId()
         db = MasterDb(getContext()!!)
+
+    }
+    fun stop() {
+
+        disconnectFromServer()
+        socket.disconnect()
 
     }
 
@@ -924,6 +930,18 @@ object Transmission : AppCompatActivity() {
 
         }
         socket.emit("on_connect", init)
+
+    }
+
+    private fun disconnectFromServer() {
+
+        val init = JSONObject().apply {
+
+            put("serverAccessCode", serverAccessCode)
+            put("senderEmail", localUserEmail)
+
+        }
+        socket.emit("on_disconnect", init)
 
     }
 

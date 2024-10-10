@@ -1,8 +1,10 @@
 package com.mca.gamma
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -11,6 +13,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.MediaController
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -56,13 +59,19 @@ class MasterActivity : Application() {
 
             Log.d("SERVER" , "USER CONNECTED TO: $serverAddress")
 
-            Transmission.addContext(applicationContext)
-            Transmission.start()
+            startForegroundService()
             coroutineA.start(); permitActivityAfterLogin = false
 
         }
 
         Log.d("APP" , "LOCAL USER CONNECTED , EMAIL: $localUserEmail + USERNAME: $localUsername + ID: $localId + SAC: $serverAccessCode")
+
+    }
+
+    private fun startForegroundService() {
+
+        val intent = Intent(applicationContext, TransmissionBackground::class.java)
+        startService(intent) // Starts the service to run in the background
 
     }
 
@@ -141,8 +150,8 @@ class InitActivity: AppCompatActivity() {
                     if(hostname.isNotEmpty() && port.isNotEmpty()) {
 
                         val key = AndroidLocalStorage(applicationContext)
-                        serverAddress = "http://$hostname:$port" // HTTP FOR NOW , BACK HOME BE MODIFIED TO HTTPS!
-                        key.saveHP("http://$hostname:$port")
+                        serverAddress = "https://$hostname:$port" // HTTP FOR NOW , BACK HOME BE MODIFIED TO HTTPS!
+                        key.saveHP("https://$hostname:$port")
 
                         startActivity(Intent("RegisterActivity")); Log.d("INIT_ACTIVITY", "ACTIVITY_REGISTER")
 
@@ -265,6 +274,7 @@ class RegisterActivity : AppCompatActivity() {
                         }
                     
                     }
+
                 } else {
 
                     // for cases when the input at the user is not in accordance with the server
@@ -372,6 +382,11 @@ class RegisterActivity : AppCompatActivity() {
 //USER UI
 class UserActivity : AppCompatActivity() {
 
+    //private lateinit var videoView: ImageView
+    //private lateinit var mediaControls: MediaController
+    private val pickFileFromRequestCode = 1
+    private var filePath: Uri? = null // IMAGE_PATH , VIDEO_PATH , FILES_PATH etc...
+
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) { Log.d("USER_ACTIVITY" ,"CREATED")
         super.onCreate(savedInstanceState)
@@ -474,8 +489,80 @@ class UserActivity : AppCompatActivity() {
 
     }
 
-}
 
+    //FOR OTHER FILE EXTENSIONS , NOT SUPPORTED BY THE APP
+    private fun openFileWithExternalApp(uri: Uri) {
+
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+
+            setDataAndType(uri, contentResolver.getType(uri)) // SET THE URI AND MIME TYPE(FILE TYPE)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // GET READ PERMISSION
+
+        }
+
+        if(intent.resolveActivity(packageManager) != null) {
+
+            startActivity(Intent.createChooser(intent, "Open file with: "))
+
+        } else {
+
+            Toast.makeText(this, "No app was found to open this file" , Toast.LENGTH_SHORT).show()
+
+        }
+
+    }
+
+    // FOR FILE SHARE TO OTHER APPS , THIS IS WHAT WE GONNA USE!
+    private fun shareFileWithOtherApps(uri: Uri) {
+
+        // Create an intent for sending the file
+        val intent = Intent(Intent.ACTION_SEND).apply {
+
+            type = contentResolver.getType(uri)  // Get the file type (MIME type) based on the Uri
+            putExtra(Intent.EXTRA_STREAM, uri)   // Pass the file Uri
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)  // Grant read permission for the receiving app
+
+        }
+
+        // Show the app chooser with the title "Transfer file with:"
+        startActivity(Intent.createChooser(intent, "Transfer file with:"))
+
+    }
+
+    // OPENS THE DEFAULT FILE PICKER , HERE THE USER SELECTS THE FILE IT WANTS TO TRANSFER
+    private fun openFilePicker() {
+
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+
+            type = "*/*"  // Allow any file type to be selected
+            addCategory(Intent.CATEGORY_OPENABLE)
+
+        }
+
+        startActivityForResult(intent, pickFileFromRequestCode)
+    }
+
+    // Runs automatically after the startActivityFromResult finishes(after the user selects and confirm a file)
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == pickFileFromRequestCode && resultCode == Activity.RESULT_OK) {
+
+            data?.data?.also { uri ->
+
+                // Access the selected file using the Uri
+                filePath = uri;  //videoView.setImageURI(filePath)
+                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                //handleSelectedFile(uri)
+
+            }
+
+        }
+
+    }
+
+}
 
 
 //MAIN UI
@@ -546,11 +633,17 @@ class MainActivity: AppCompatActivity() {
         if(permitActivityAfterLogin && permitObjInternetAcess) {
             Log.d("MAIN PERMIT" , "TRANSMISSION ACTIVATED FOR FIRST TIME")
 
-            Transmission.addContext(applicationContext)
-            Transmission.start()
+            startForegroundService()
             permitActivityAfterLogin = false
 
         }
+
+    }
+
+    private fun startForegroundService() {
+
+        val intent = Intent(applicationContext, TransmissionBackground::class.java)
+        startService(intent) // Starts the service to run in the background
 
     }
 

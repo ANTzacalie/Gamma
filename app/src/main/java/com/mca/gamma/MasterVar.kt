@@ -73,6 +73,7 @@ var permitObjInternetAcess: Boolean = false // Connectivity Object, this shows u
         --- STORAGE OF FILES WILL BE IN APP PRIVATE STORAGE!
         --- DATABASE WILL BE STORED IN THE SAME PLACE(NEED TESTING ETC..)
 
+        --- IMPLEMENTATION STARTED , AM ADAUGAT TOTA LOGICA DIN APP TEST , DE FACUT LEGATURA COMPLET
  */
 
 // Todo: Integrate the application settings and the rest of the Main interface (Black List and Groups (will have a separate table in DB for settings only))

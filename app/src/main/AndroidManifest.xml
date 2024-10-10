@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -89,10 +92,24 @@
             </intent-filter>
         </receiver>
 
-        <service android:name="com.mca.gamma.SocketBack"
-            android:enabled="true"
-            android:exported="false"/>
+        <service
+            android:name=".TransmissionBackground"
+            android:foregroundServiceType="dataSync" /> <!-- Specify service type like dataSync, location, etc. -->
 
 </application>
+
+    <queries>
+
+        <!-- Intent-based queries -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="*/*" />
+        </intent>
+
+        <!-- Specific apps queries -->
+        <package android:name="com.example.filemanager" />
+        <!-- More packages can be added -->
+
+    </queries>
 
 </manifest>
