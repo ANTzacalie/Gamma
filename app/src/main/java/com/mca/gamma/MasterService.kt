@@ -95,9 +95,9 @@ class TransmissionBackground: Service() {
     // Creates a notification channel and return channelId
     private fun createNotificationChannel(channelId: String, channelName: String): String {
 
-        val notfChan = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
+        val notificationChannel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.createNotificationChannel(notfChan)
+        manager.createNotificationChannel(notificationChannel)
 
         return channelId
 
@@ -114,6 +114,7 @@ object Transmit: AppCompatActivity() {
 
     private var showImage: WeakReference<ImageView>? = null
     private var appContext: WeakReference<Context>? = null
+
     fun addImageView(imageView: ImageView) {
 
         showImage = WeakReference(imageView)

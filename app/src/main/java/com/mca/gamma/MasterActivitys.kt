@@ -393,7 +393,14 @@ class UserActivity : AppCompatActivity() {
         setContentView(R.layout.activity_chat)
         window.statusBarColor = ContextCompat.getColor(this, R.color.black)
         window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
-        
+
+
+        // TODO:  IMPLEMENT MODIFICATION TO CARDS TO INCLUDE MEDIA SUPPORT
+        //        MEDIA THAT IS UNABLE TO BE VIEWED ON SCREEN WILL BE TAG WITH A RED BALL IN RIGHT CORNER
+        //        IF MEDIA SUPPORTED WILL BE TAG WITH GREEN BALL;
+
+        // THERE WILL BE A VIDEO_VIEW , YOUTUBE_VIEW AND AN IMAGE_VIEW
+
         val sendMessageButton: ImageButton = findViewById(R.id.sendMessage)
         val loadProfileIcon: ImageView = findViewById(R.id.cardImage) // that when we add File Support (more Info in Mastervar)
         val userSettingsButton: LinearLayout = findViewById(R.id.userSettings)
@@ -489,7 +496,6 @@ class UserActivity : AppCompatActivity() {
 
     }
 
-
     //FOR OTHER FILE EXTENSIONS , NOT SUPPORTED BY THE APP
     private fun openFileWithExternalApp(uri: Uri) {
 
@@ -512,7 +518,7 @@ class UserActivity : AppCompatActivity() {
 
     }
 
-    // FOR FILE SHARE TO OTHER APPS , THIS IS WHAT WE GONNA USE!
+    // FOR FILE SHARE TO OTHER APPS , THIS IS WHAT WE GONNA USE ON CHAT_CARD FOR REDIRECT!
     private fun shareFileWithOtherApps(uri: Uri) {
 
         // Create an intent for sending the file

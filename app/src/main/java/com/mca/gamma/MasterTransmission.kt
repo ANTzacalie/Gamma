@@ -3,6 +3,9 @@ import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Environment
+import android.util.Base64
 import android.util.Log
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
@@ -11,6 +14,10 @@ import io.socket.client.IO
 import io.socket.client.Socket
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
 import java.lang.ref.WeakReference
 
 
@@ -727,6 +734,63 @@ object Transmission : AppCompatActivity() {
 
     }
 
+    /* IMPLEMENT THE BELOW CODE IN MESSAGE SEND , MESSAGE_BULK , STB_MESSAGE(ALL) , MESSAGE_RECEIVER(ALL)
+
+        socket.on("FILE_STREAM_RECEIVER") { args ->
+            val data = args[0] as JSONObject
+            val base64File = data.getString("someEncodedFile")
+            val fileMime = data.getString("fileMime")
+
+            Log.e("SOCKET_IO", "PACKAGE FROM USER RECEIVED")
+
+            val filePath: Uri? = decodeBase64AndSaveFile(base64File , fileMime , getContext()!!)
+            if(inActivity && allowUpdate) {
+
+                val imageView: ImageView? = getImageView()
+
+                if (imageView != null) {
+
+                    runOnUiThread { imageView.setImageURI(filePath) }
+
+                } else {
+
+                    Log.e("SOCKET_IO", "ImageView or filePath is null!")
+
+                }
+
+            }
+
+        }
+
+    }
+
+    // SENDING THE FILE TO ANOTHER DEVICE
+    fun sendFileTest(inputFile: Uri?, context: Context) {
+
+        val fileBytes: ByteArray? = readFileFromUri(inputFile!! , context)
+        val fileMime = context.contentResolver.getType(inputFile)
+
+        if(fileBytes != null) {
+
+            val base64File = Base64.encodeToString(fileBytes , Base64.DEFAULT)
+
+            val data = JSONObject().apply {
+
+                put("someEncodedFile" , base64File)
+                put("fileMime" , fileMime)
+
+            }
+
+            Log.d("SEND FILE" , "File was successfully sent! , file: $data")
+            socket.emit("file" , data)
+
+        }
+
+    }
+
+
+    */
+
     fun sendAny(event: String , data: JSONObject) {
         Log.d("SEND ANY:", event)
 
@@ -997,6 +1061,85 @@ object Transmission : AppCompatActivity() {
         }
 
         Log.d("COROUTINE_B" , "END")
+
+    }
+
+    // WITH THIS FUNCTION WE READ THE FILE FROM URI AND RETURN IT AS A BYTE_ARRAY FOR FURTHER PROCESS
+    private fun readFileFromUri(uri: Uri, context: Context): ByteArray? {
+
+        try {
+
+            // Declaring and init I/O STREAM
+            val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+            val byteArrayOutputStream = ByteArrayOutputStream()
+
+            if (inputStream != null) {
+
+                // Creating the buffer
+                val buffer = ByteArray(1024)
+                var length: Int
+
+                // Read the file content into a byte array
+                while (inputStream.read(buffer).also { length = it } != -1) {
+
+                    byteArrayOutputStream.write(buffer, 0, length)
+
+                }
+
+                inputStream.close()
+                return byteArrayOutputStream.toByteArray()
+
+            }
+
+        } catch (e: Exception) {
+
+            Log.d("READ FILE FROM URI" ,"File unsuccessfully read , error message: ${e.message}")
+
+        }
+
+        return null
+
+    }
+
+    // Function to decode Base64 to file and save it locally , also identify the file extension for easy managing, returns the URI after is done
+    private fun decodeBase64AndSaveFile(base64File: String, mimeType: String , context: Context): Uri? {
+
+        try {
+
+            // Decode Base64 string to byte array
+            val fileBytes = Base64.decode(base64File, Base64.DEFAULT)
+
+            // Determine the file extension based on the MIME type
+            val fileExtension = when {
+
+                mimeType.startsWith("image/") -> ".jpg"
+
+                mimeType.startsWith("video/") -> ".mp4"
+
+                mimeType.startsWith("text/") -> ".txt"
+
+                else -> ".bin"
+
+            }
+
+            // TODO: Save the file to external storage (modify path as needed) , *"received_file" need to add a random name generator or send the original filename.
+            val fileName = "received_file$fileExtension"
+            val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
+            val fos = FileOutputStream(file)
+
+            fos.write(fileBytes)
+            fos.close()
+
+            // Return the file's URI
+            return Uri.fromFile(file)
+
+        } catch (e: Exception) {
+
+            Log.d("DECODE BASE64 FILE" , "File not decode, error: ${e.message}")
+
+        }
+
+        return null
 
     }
 
