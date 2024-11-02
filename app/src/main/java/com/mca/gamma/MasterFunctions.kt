@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -477,6 +478,36 @@ class UserActivityChild(): AppCompatActivity() {
 
     }
 
+    // FOR FILE SHARE TO OTHER APPS , THIS IS WHAT WE GONNA USE ON CHAT_CARD FOR REDIRECT!
+    private fun shareFileWithOtherApps(uri: Uri) {
+
+        // Create an intent for sending the file
+        val intent = Intent(Intent.ACTION_SEND).apply {
+
+            type = contentResolver.getType(uri)  // Get the file type (MIME type) based on the Uri
+            putExtra(Intent.EXTRA_STREAM, uri)   // Pass the file Uri
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)  // Grant read permission for the receiving app
+
+        }
+
+        // Show the app chooser with the title "Transfer file with:"
+        startActivity(Intent.createChooser(intent, "Transfer file with:"))
+
+    }
+
+    // OPENS THE DEFAULT FILE PICKER , HERE THE USER SELECTS THE FILE IT WANTS TO TRANSFER
+    private fun openFilePicker() {
+
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+
+            type = "*/*"  // Allow any file type to be selected
+            addCategory(Intent.CATEGORY_OPENABLE)
+
+        }
+
+        startActivityForResult(intent, 1)
+    }
+
 }
 
 class CardViews(): AppCompatActivity() {
@@ -526,6 +557,7 @@ class CardViews(): AppCompatActivity() {
 
     }
 
+    //TODO: LATER! , THE ICON OF THE USER WILL BE RECEIVED WEHN BOTH USER WILL BR FRIEND , ICON WILL UPDATE AS USERS UPDATE IT , LOGIC AS IM_ONLINE WILL BE USED FOR THAT!
     @SuppressLint("InflateParams")
     fun mainUiCard(dataVector: MutableList<String?>, activityLayout: LinearLayout, context: Context , constraintLayout: ConstraintLayout) {
 

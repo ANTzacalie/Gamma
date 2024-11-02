@@ -179,7 +179,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
     }
 
     //executed each time a new connction with another user is made
-    fun tableCreatorUser(userId: String) {
+    fun tableCreatorUser(userId: String) { //TODO: ADD MESSAGE_MEDIA AND TYPE_MIME
 
         val db = writableDatabase
 

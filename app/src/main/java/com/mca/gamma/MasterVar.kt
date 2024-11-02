@@ -64,7 +64,7 @@ var permitObjInternetAcess: Boolean = false // Connectivity Object, this shows u
 // *Version 2.89 gamma *///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*
 
 /*
-
+    // TODO: AM NOTAT CU BULINA ROSIE CE AVEM DE MODIFICAT! , TREBUIE SA ADAUGAM FILE SUPPORT ACOLO(IMAGE,VIDEO,YOUTUBE si OTHER)
     TODO: SERVER DATA TRANSFER TEST IS FINISHED , ANDROID MEDIA FILES / OTHER FILES TEST FINISHED AND OBJECT LOGIC IS CORRECT FOR BOTH SERVICE AND APPLICATION ACTIVITY!
         --- IMPLEMENT ANDROID STORAGE FUNCTIONS
         --- IMPLEMENT SERVER FILE_TRANSFER MODIFICATIONS

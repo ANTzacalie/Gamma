@@ -384,7 +384,6 @@ class UserActivity : AppCompatActivity() {
 
     //private lateinit var videoView: ImageView
     //private lateinit var mediaControls: MediaController
-    private val pickFileFromRequestCode = 1
     private var filePath: Uri? = null // IMAGE_PATH , VIDEO_PATH , FILES_PATH etc...
 
     @SuppressLint("SetTextI18n")
@@ -398,8 +397,8 @@ class UserActivity : AppCompatActivity() {
         // TODO:  IMPLEMENT MODIFICATION TO CARDS TO INCLUDE MEDIA SUPPORT
         //        MEDIA THAT IS UNABLE TO BE VIEWED ON SCREEN WILL BE TAG WITH A RED BALL IN RIGHT CORNER
         //        IF MEDIA SUPPORTED WILL BE TAG WITH GREEN BALL;
+        //        THERE WILL BE A VIDEO_VIEW , YOUTUBE_VIEW AND AN IMAGE_VIEW
 
-        // THERE WILL BE A VIDEO_VIEW , YOUTUBE_VIEW AND AN IMAGE_VIEW
 
         val sendMessageButton: ImageButton = findViewById(R.id.sendMessage)
         val loadProfileIcon: ImageView = findViewById(R.id.cardImage) // that when we add File Support (more Info in Mastervar)
@@ -518,42 +517,12 @@ class UserActivity : AppCompatActivity() {
 
     }
 
-    // FOR FILE SHARE TO OTHER APPS , THIS IS WHAT WE GONNA USE ON CHAT_CARD FOR REDIRECT!
-    private fun shareFileWithOtherApps(uri: Uri) {
-
-        // Create an intent for sending the file
-        val intent = Intent(Intent.ACTION_SEND).apply {
-
-            type = contentResolver.getType(uri)  // Get the file type (MIME type) based on the Uri
-            putExtra(Intent.EXTRA_STREAM, uri)   // Pass the file Uri
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)  // Grant read permission for the receiving app
-
-        }
-
-        // Show the app chooser with the title "Transfer file with:"
-        startActivity(Intent.createChooser(intent, "Transfer file with:"))
-
-    }
-
-    // OPENS THE DEFAULT FILE PICKER , HERE THE USER SELECTS THE FILE IT WANTS TO TRANSFER
-    private fun openFilePicker() {
-
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-
-            type = "*/*"  // Allow any file type to be selected
-            addCategory(Intent.CATEGORY_OPENABLE)
-
-        }
-
-        startActivityForResult(intent, pickFileFromRequestCode)
-    }
-
     // Runs automatically after the startActivityFromResult finishes(after the user selects and confirm a file)
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == pickFileFromRequestCode && resultCode == Activity.RESULT_OK) {
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
 
             data?.data?.also { uri ->
 
