@@ -16,6 +16,7 @@ import android.widget.LinearLayout
 import android.widget.MediaController
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -382,8 +383,6 @@ class RegisterActivity : AppCompatActivity() {
 //USER UI
 class UserActivity : AppCompatActivity() {
 
-    //private lateinit var videoView: ImageView
-    //private lateinit var mediaControls: MediaController
     private var filePath: Uri? = null // IMAGE_PATH , VIDEO_PATH , FILES_PATH etc...
 
     @SuppressLint("SetTextI18n")
@@ -402,6 +401,7 @@ class UserActivity : AppCompatActivity() {
 
         val sendMessageButton: ImageButton = findViewById(R.id.sendMessage)
         val loadProfileIcon: ImageView = findViewById(R.id.cardImage) // that when we add File Support (more Info in Mastervar)
+        val getFile: ImageButton = findViewById(R.id.addFiles)
         val userSettingsButton: LinearLayout = findViewById(R.id.userSettings)
         val inputText: EditText = findViewById(R.id.messageText)
         val usernameTextView: TextView = findViewById(R.id.usernameDisplayText)
@@ -422,7 +422,7 @@ class UserActivity : AppCompatActivity() {
         // we enter text in the textViewcia box to display the friend's username
         usernameTextView.text = sUsername
 
-        sendMessageButton.setOnClickListener { UserActivityChild().sendMessage(inputText , cardLinearLayout , applicationContext , sUser , sUKey , sId) }
+        sendMessageButton.setOnClickListener { UserActivityChild().sendMessage(inputText , cardLinearLayout , applicationContext , sUser , sUKey , sId , null , null) }
 
         userSettingsButton.setOnClickListener {
 
@@ -433,6 +433,12 @@ class UserActivity : AppCompatActivity() {
                     .commitNow()
 
             }
+
+        }
+
+        getFile.setOnClickListener {
+
+            UserActivityChild().openFilePicker()
 
         }
 
@@ -464,10 +470,10 @@ class UserActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        // for any eventuality we replace globalspecificer with null
+        // for any eventuality we replace globalspecificuser with null
         globalSpecificUser = null
 
-        // no longer allow the transmission object to perform actions in msg_liserner
+        // no longer allow the transmission object to perform actions in msg_listener
         permitObjUser = false
 
     }
@@ -495,29 +501,7 @@ class UserActivity : AppCompatActivity() {
 
     }
 
-    //FOR OTHER FILE EXTENSIONS , NOT SUPPORTED BY THE APP
-    private fun openFileWithExternalApp(uri: Uri) {
-
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-
-            setDataAndType(uri, contentResolver.getType(uri)) // SET THE URI AND MIME TYPE(FILE TYPE)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // GET READ PERMISSION
-
-        }
-
-        if(intent.resolveActivity(packageManager) != null) {
-
-            startActivity(Intent.createChooser(intent, "Open file with: "))
-
-        } else {
-
-            Toast.makeText(this, "No app was found to open this file" , Toast.LENGTH_SHORT).show()
-
-        }
-
-    }
-
-    // Runs automatically after the startActivityFromResult finishes(after the user selects and confirm a file)
+    // Runs automatically after the openFilePicker finishes(after the user selects and confirm a file)
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -527,9 +511,39 @@ class UserActivity : AppCompatActivity() {
             data?.data?.also { uri ->
 
                 // Access the selected file using the Uri
-                filePath = uri;  //videoView.setImageURI(filePath)
+                filePath = uri
+
+                val fileExtType = this.contentResolver.getType(filePath!!)
+
+                when {
+
+                    fileExtType!!.startsWith("image/") -> {
+                        // type: .jpg
+                        // TODO: DUPA CE REFACEM CARDURILE!
+
+                    }
+
+                    fileExtType.startsWith("video/" ) -> {
+                        //type: .mp4
+
+
+                    }
+
+                    fileExtType.startsWith("text/"  ) -> {
+                        //type: .txt
+
+
+                    }
+
+                    else -> {
+                        // type: .bin
+
+
+                    }
+
+                }
+
                 contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                //handleSelectedFile(uri)
 
             }
 

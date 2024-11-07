@@ -9,11 +9,16 @@ import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.webkit.WebView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.MediaController
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
+import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -458,7 +463,7 @@ class Https() {
 
 class UserActivityChild(): AppCompatActivity() {
 
-    fun sendMessage(inputText: EditText, linearLayout: LinearLayout, context: Context , sUser: String? , sUKey: String?, sId : String?) {
+    fun sendMessage(inputText: EditText, linearLayout: LinearLayout, context: Context , sUser: String? , sUKey: String?, sId : String? , fileUri: Uri? , fileType: String?) {
 
         // take the input from textbox line with line
         val fullInputText = inputText.text.toString().lines()
@@ -467,7 +472,7 @@ class UserActivityChild(): AppCompatActivity() {
         val finalText = fullInputText.joinToString("\n")
 
         // we display a card with input in textvar
-        CardViews().sendMessageCard(finalText, Time().getCurrentTime(), linearLayout, context)
+        CardViews().sendMessageCard(finalText, Time().getCurrentTime(), linearLayout, context , fileUri , fileType)
 
         //Sending the message
         Transmission.sendMessage(sUser, sUKey, finalText, sId) //trimitem mesajul
@@ -478,8 +483,30 @@ class UserActivityChild(): AppCompatActivity() {
 
     }
 
+    //FOR OTHER FILE EXTENSIONS , NOT SUPPORTED BY THE APP
+    private fun openFileWithExternalApp(uri: Uri) {
+
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+
+            setDataAndType(uri, contentResolver.getType(uri)) // SET THE URI AND MIME TYPE(FILE TYPE)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // GET READ PERMISSION
+
+        }
+
+        if(intent.resolveActivity(packageManager) != null) {
+
+            startActivity(Intent.createChooser(intent, "Open file with: "))
+
+        } else {
+
+            Toast.makeText(this, "No app was found to open this file" , Toast.LENGTH_SHORT).show()
+
+        }
+
+    }
+
     // FOR FILE SHARE TO OTHER APPS , THIS IS WHAT WE GONNA USE ON CHAT_CARD FOR REDIRECT!
-    private fun shareFileWithOtherApps(uri: Uri) {
+    fun shareFileWithOtherApps(uri: Uri) {
 
         // Create an intent for sending the file
         val intent = Intent(Intent.ACTION_SEND).apply {
@@ -496,7 +523,7 @@ class UserActivityChild(): AppCompatActivity() {
     }
 
     // OPENS THE DEFAULT FILE PICKER , HERE THE USER SELECTS THE FILE IT WANTS TO TRANSFER
-    private fun openFilePicker() {
+    fun openFilePicker() {
 
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
 
@@ -512,25 +539,50 @@ class UserActivityChild(): AppCompatActivity() {
 
 class CardViews(): AppCompatActivity() {
 
+    private lateinit var mediaControls: MediaController
     // card is composed of: text_view (text sent/received) + text_view (message_date)
     // Todo: Add Message Delete, only for the local user!
 
     @SuppressLint("InflateParams", "MissingInflatedId")
-    fun sendMessageCard(messageText: String? , messageDateText: String?, activityLayout: LinearLayout, context: Context) {
+    fun sendMessageCard(messageText: String? , messageDateText: String?, activityLayout: LinearLayout, context: Context , fileUri: Uri? , fileType: String?) {
 
         val inflater = LayoutInflater.from(context)
         val cardLayout = inflater.inflate(R.layout.chat_card , null)
+        val mediaLayout = inflater.inflate(R.layout.media_layout , null)
 
         val card: CardView = cardLayout.findViewById(R.id.cardView)
         val cardText: TextView = cardLayout.findViewById(R.id.cardTextB)
         val cardDateText: TextView = cardLayout.findViewById(R.id.dateText)
+        val cardImageView: ImageView = mediaLayout.findViewById(R.id.imageView)
+        val cardVideoView: VideoView = mediaLayout.findViewById(R.id.videoView)
+        //val cardWebView: WebView = mediaLayout.findViewById(R.id.webView)
 
         card.setCardBackgroundColor(context.getColorStateList(R.color.light_blue))
 
         cardText.text = messageText
         cardDateText.text = messageDateText
 
+        when(fileType) { //TODO: DE TERMINAT
+
+            ".jpg" -> {
+                
+            }
+            ".mp4" -> {
+
+
+            }
+            ".txt" -> {
+
+            }
+            else -> {
+
+            }
+
+        }
+
+
         activityLayout.addView(cardLayout)
+        activityLayout.addView(mediaLayout)
 
         Log.d("cardViews","sendMessageCard")
 
