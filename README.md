@@ -1,0 +1,5 @@
+- App to be redone for a minimal interface
+- Server complete rebuild
+- App internal exchange system to server will be simplified and straight
+- No more usless interfaces
+- Remove unecessary logic !!!
