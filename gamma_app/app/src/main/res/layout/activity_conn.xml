@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/connConstraintLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".ConnActivity">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="130dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="65dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="141dp"
+        android:text="@string/requestsP"
+        android:textColor="@color/white"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imageButton"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView3"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/gri30"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout2"
+        tools:ignore="SpeakableTextPresentCheck">
+
+        <LinearLayout
+            android:id="@+id/cardLinearLayoutConn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <ImageView
+        android:id="@+id/imageButton"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="30dp"
+        android:backgroundTint="@color/black"
+        android:onClick="buttonConn"
+        app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/back_icon"
+        tools:ignore="ContentDescription" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="30dp"
+        android:background="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/nestedScrollView3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        tools:ignore="MissingConstraints">
+
+        <EditText
+            android:id="@+id/inputConnRequest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="10dp"
+            android:backgroundTint="@color/black"
+            android:ems="10"
+            android:hint="@string/example_gmail_com"
+            android:inputType="textEmailAddress"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gri60"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView3"
+            tools:ignore="Autofill" />
+
+        <Button
+            android:id="@+id/sendConnRequest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="10dp"
+            android:backgroundTint="@color/black"
+            android:text="@string/sendLowerCaps"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/to_send_a_request_enter_friend_s_email_here"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@+id/inputConnRequest"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

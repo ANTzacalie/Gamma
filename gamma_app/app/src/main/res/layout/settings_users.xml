@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/goBack"
+                    android:layout_width="50dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="25dp"
+                    android:layout_marginTop="35dp"
+                    android:layout_marginBottom="25dp"
+                    android:contentDescription="@string/todo"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/back_icon" />
+
+                <LinearLayout
+                    android:id="@+id/userDisplay"
+                    android:layout_width="250dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="25dp"
+                    android:layout_marginEnd="15dp"
+                    android:background="@drawable/round_shape"
+                    android:backgroundTint="@color/white"
+                    android:clickable="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ImageView
+                        android:id="@+id/cardImage"
+                        android:layout_width="55dp"
+                        android:layout_height="55dp"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="3dp"
+                        android:layout_marginBottom="2dp"
+                        android:background="@drawable/round_transparent_shape"
+                        android:clipToOutline="true"
+                        android:contentDescription="@string/user_icon"
+                        android:outlineProvider="background"
+                        android:scaleType="centerCrop"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:targetApi="s" />
+
+                    <TextView
+                        android:id="@+id/usernameDisplayText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginEnd="5dp"
+                        android:textAllCaps="false"
+                        android:textColor="@color/red"
+                        android:textSize="14sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/cardImage"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:ignore="MissingConstraints" />
+
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="30dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchNotifications"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:background="@drawable/round_shape"
+                    android:checked="false"
+                    android:text="@string/turn_off_all_notifications"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchBlock"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:background="@drawable/round_shape"
+                    android:checked="false"
+                    android:text="@string/block_the_user"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="480dp" />
+
+            <Button
+                android:id="@+id/changeUsername"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/round_shape"
+                android:text="@string/change_username"
+                android:textColor="@color/white"
+                android:textSize="19sp"
+                app:cornerRadius="@null" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <Button
+                android:id="@+id/exportChat"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/round_shape"
+                android:backgroundTint="@color/gri30"
+                android:text="@string/export_conversation_to_txt"
+                android:textAllCaps="false"
+                android:textColor="@color/green"
+                android:textSize="20sp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <Button
+                android:id="@+id/removeFriend"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/round_shape"
+                android:backgroundTint="@color/gri30"
+                android:text="@string/remove"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textColor="@color/coralColor"
+                android:textSize="19sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout3"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".RegisterActivity">
+
+        <FrameLayout
+            android:id="@+id/changeUsernameFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
