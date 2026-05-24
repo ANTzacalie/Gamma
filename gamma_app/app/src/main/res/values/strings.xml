@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MCA</string>
+    <string name="app_name">Gamma</string>
     <string name="send">SEND</string>
     <string name="email_of_user">EMAIL OF USER</string>
     <string name="button">Button</string>
@@ -18,7 +18,7 @@
     <string name="friends">FRIENDS</string>
     <string name="requests">Requests</string>
     <string name="click_here_to_signup">Click here to signup!</string>
-    <string name="amma">Γamma</string>
+    <string name="Gamma">Γamma</string>
     <string name="login">LOGIN</string>
     <string name="password">Password</string>
     <string name="email">Email</string>

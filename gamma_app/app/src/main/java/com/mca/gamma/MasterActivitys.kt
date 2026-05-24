@@ -24,7 +24,7 @@ import kotlinx.coroutines.*
 
 /* Todo:
 Master Comment:
--> At the end <when we finish the application, we will have all the comments in English!>
+-> At the end <when we finish the application, will have all the comments in English!>
 */
 
 // MasterActivity, the beginning of application and initializations , SETUP()
