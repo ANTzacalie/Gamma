@@ -11,6 +11,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import androidx.security.crypto.MasterKeys
 import kotlin.Exception
+import androidx.core.content.edit
 
 // keystore class
 class AndroidLocalStorage(private val context: Context) {
@@ -18,7 +19,7 @@ class AndroidLocalStorage(private val context: Context) {
     private val masterKeyAlias = MasterKey.Builder(context).setKeyGenParameterSpec(MasterKeys.AES256_GCM_SPEC).build()
 
     fun storeAppSettings(lockStat: Int ,profUri: String? ,allNotify: Int ,friendRequests: Int) {
-        Log.d("LOCAL STORAGE","SAVE APP_SETTINGS USED")
+        Log.d("LOCAL STORAGE","SAVED APP_SETTINGS")
 
         val sharedPreferences = EncryptedSharedPreferences.create(
             context,
@@ -28,17 +29,17 @@ class AndroidLocalStorage(private val context: Context) {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
-        sharedPreferences.edit()
-            .putInt("LOCK_STATUS", lockStat)
-            .putString("PROFILE_URI" , profUri)
-            .putInt("ALL_NOTIFICATION", allNotify)
-            .putInt("FRIEND_REQUESTS", friendRequests)
-            .apply()
+        sharedPreferences.edit {
+            putInt("LOCK_STATUS", lockStat)
+                .putString("PROFILE_URI", profUri)
+                .putInt("ALL_NOTIFICATION", allNotify)
+                .putInt("FRIEND_REQUESTS", friendRequests)
+        }
 
     }
 
     fun storeConnectionData(email: String?, serverAccessCode: String?, username: String?, id: String?) {
-        Log.d("LOCAL STORAGE","SAVE LOGIN_DATA USED")
+        Log.d("LOCAL STORAGE","SAVED LOGIN_DATA")
 
         val sharedPreferences = EncryptedSharedPreferences.create(
             context,
@@ -48,16 +49,16 @@ class AndroidLocalStorage(private val context: Context) {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
-        sharedPreferences.edit()
-            .putString("email", email)
-            .putString("username" , username)
-            .putString("id",id)
-            .apply()
+        sharedPreferences.edit {
+            putString("email", email)
+                .putString("username", username)
+                .putString("id", id)
+        }
 
     }
 
     fun storeServerAddress(fullServerText: String?) {
-        Log.d("LOCAL STORAGE","SAVE HOST_AND_PORT USED")
+        Log.d("LOCAL STORAGE","SAVED S_ADDRESS")
 
         val sharedPreferences = EncryptedSharedPreferences.create(
             context,
@@ -67,9 +68,9 @@ class AndroidLocalStorage(private val context: Context) {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
-        sharedPreferences.edit()
-            .putString("hp" , fullServerText)
-            .apply()
+        sharedPreferences.edit {
+            putString("sa", fullServerText)
+        }
 
     }
 
@@ -83,7 +84,7 @@ class AndroidLocalStorage(private val context: Context) {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
-        return sharedPreferences.getString("hp", null)
+        return sharedPreferences.getString("sa", null)
 
     }
 
@@ -785,6 +786,10 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
         }
 
+    }
+
+    fun loadDynamicMessages() {
+        // TODO: IMPLEMENT DINAMIC MESSAGE LOADING
     }
 
 }

@@ -36,16 +36,16 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.18.0")
-    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("androidx.core:core-ktx:1.19.1")
+    implementation("androidx.appcompat:appcompat:1.8.0")
     implementation("com.google.android.material:material:1.14.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
-    implementation("com.squareup.okhttp3:okhttp:5.3.2")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.2")
+    implementation("com.squareup.okhttp3:okhttp:5.5.0")
     implementation("androidx.security:security-crypto:1.1.0")
     implementation("io.socket:socket.io-client:2.1.2")
     implementation("com.google.code.gson:gson:2.14.0")
     implementation("com.github.kittinunf.fuel:fuel:2.3.1")
-    implementation("androidx.work:work-runtime:2.11.2")
+    implementation("androidx.work:work-runtime:2.12.0")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.cardview:cardview:1.0.0")
 

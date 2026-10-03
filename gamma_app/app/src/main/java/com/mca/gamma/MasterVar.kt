@@ -47,8 +47,8 @@ var cardMainBoolean: Boolean = true
 var changeUsernameBoolean: Boolean = true
 //
 
-//##. Tranmission obj
-var permitObjMain: Boolean = false // Mainde, so we can update the interface
+//##. Transmission obj
+var permitObjMain: Boolean = false // Main, so we can update the interface
 
 var permitObjConn: Boolean = false // understand, so we can update the interface
 
@@ -60,7 +60,7 @@ var permitObjInternetAcess: Boolean = false // Connectivity Object, this shows u
 //##. Transmission obj
 
 
-// VERSION 3.0
+// VERSION 2.50
 
 // TODO: REFA TOATE BUTOANELE DE GO_BACK , SEND ETC..  , FOLOSIM GOOGLE ICONS!
 // ALL INTERNAL CODE WILL BE REDONE , AS WELL AS WELL AS FOR SERVER CODE!

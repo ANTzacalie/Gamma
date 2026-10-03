@@ -47,12 +47,12 @@ class MasterActivity : Application() {
         localUsername = key.getLocalUsername()
         localId = key.getLocalId()
 
-        // here we record the object/class Connectivity as Brodcast Received (will monitor network changes)
+        // here we record the object/class Connectivity as Broadcast Received (will monitor network changes)
         val connectivityReceiver = Connectivity
         val filter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
         registerReceiver(connectivityReceiver, filter)
 
-        // we check if the user is connected and we initialize transmission and coroutineA
+        // we check if the user is connected, and we initialize transmission and coroutineA
         if(!serverAccessCode.isNullOrEmpty()) {
 
             Log.d("SERVER" , "USER CONNECTED TO: $serverAddress")
@@ -385,7 +385,7 @@ class UserActivity : AppCompatActivity() {
         // we initialize the date of bases, we open an instance of it
         val db = MasterDb(applicationContext)
 
-        // we enter text in the textViewcia box to display the friend's username
+        // we enter text in the textView box to display the friend's username
         usernameTextView.text = sUsername
 
         sendMessageButton.setOnClickListener { UserActivityChild().sendMessage() }
@@ -408,8 +408,8 @@ class UserActivity : AppCompatActivity() {
 
         }
 
-        // here we load all the messages with the friend in  messageArray for now
-        val messageArray = db.NULL
+        // loads all chat messages
+        val messageArray = db.loadDynamicMessages()
 
         if(messageArray.size > 0) {
 
@@ -546,10 +546,10 @@ class MainActivity: AppCompatActivity() {
         val db = MasterDb(applicationContext)
 
         // we load all friends from DB in Main array
-        val mainArray = db.NULL
+        val mainArray = db.loadMain()
 
         // we display on the screen, through cards, all connected friends
-        for(i in 0 until mainArray.size step 1) {
+        for(i in mainArray.indices step 1) {
 
             CardViews().mainUiCard( /* SOMETHING */ )
 
