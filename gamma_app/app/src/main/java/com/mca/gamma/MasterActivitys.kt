@@ -365,7 +365,7 @@ class UserActivity : AppCompatActivity() {
         //        THERE WILL BE A VIDEO_VIEW , YOUTUBE_VIEW AND AN IMAGE_VIEW
 
         val sendMessageButton: ImageButton = findViewById(R.id.sendMessage)
-        val loadProfileIcon: ImageView = findViewById(R.id.cardImage)
+        val loadProfileIcon: ImageView = findViewById(R.id.cardImage)                               // FIXME: BIND PROFILE_IMAGE TO DISPLAY IT ON SCREEN
         val getFile: ImageButton = findViewById(R.id.addFiles)
         val userSettingsButton: LinearLayout = findViewById(R.id.userSettings)
         val inputText: EditText = findViewById(R.id.messageText)
@@ -419,7 +419,7 @@ class UserActivity : AppCompatActivity() {
                     //The messages of the one who sent to the current user
                     "$sUser" -> { CardViews().receiveMessageCard() }
 
-                    // messages of the one using the current application
+                    //Local user messages
                     "$localUserEmail" -> { CardViews().sendMessageCard() }
 
                 }

@@ -220,7 +220,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
         val db = writableDatabase
 
-        Log.d("TABLE USERS" , "TABLE CREATED FOR USER_ID: $userId")
+        Log.d("TABLE USER" , "TABLE CREATED FOR USER_ID: $userId")
         val createTableSql = """
             CREATE TABLE IF NOT EXISTS $userId (
                 id INTEGER PRIMARY KEY,

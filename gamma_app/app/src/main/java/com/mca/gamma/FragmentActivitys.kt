@@ -396,7 +396,6 @@ class CodeVerificationActivity(context: Context) : Fragment(R.layout.activity_co
 
 }
 
-// TODO: NOT COMPLETE
 class OpenSettingsUser(context: Context) : Fragment(R.layout.settings_users) {
 
     private val appContext = context
@@ -416,7 +415,7 @@ class OpenSettingsUser(context: Context) : Fragment(R.layout.settings_users) {
         val removeFriend: Button = view.findViewById(R.id.removeFriend)
         val exportChat: Button = view.findViewById(R.id.exportChat)
         val changeUsernameFriend: Button = view.findViewById(R.id.changeUsername)
-        val userPicture: ImageView = view.findViewById(R.id.cardImage)
+        val userPicture: ImageView = view.findViewById(R.id.cardImage)                              // FIXME: ADD IMAGE ON DISPLAY
         val usernameOnFragment: TextView = view.findViewById(R.id.usernameDisplayText)
 
         //val image: ImageView = view.findViewById(R.id.cardImage) //Image we will add the friend's profile image, we see how we add it (where we store the image in the first phase!)
@@ -463,9 +462,9 @@ class OpenSettingsUser(context: Context) : Fragment(R.layout.settings_users) {
         removeFriend.setOnLongClickListener {
 
             // FIXME:
-                // A fragment where the user decides whether to eliminate or not the friend.
+            // A fragment where the user decides whether to eliminate or not the friend.
 
-            null
+            false
         }
 
         changeUsernameFriend.setOnClickListener {
@@ -507,7 +506,6 @@ class OpenSettingsUser(context: Context) : Fragment(R.layout.settings_users) {
     }
 
 }
-
 
 class ChangeUsernameUsers(context: Context) : Fragment(R.layout.username_changer) {
 
