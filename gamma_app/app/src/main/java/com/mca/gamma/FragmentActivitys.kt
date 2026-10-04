@@ -348,9 +348,10 @@ class CodeVerificationActivity(context: Context) : Fragment(R.layout.activity_co
                         val key = AndroidLocalStorage(appContext)
                         key.storeConnectionData(localUserEmail, serverAccessCode , localUsername , localId)
 
-                        //NOW HERE WE CREATE THE MAIN TABLE , ONE SINGLE TIME
+                        //NOW HERE WE CREATE THE MAIN_TABLE & SETTINGS, ONE SINGLE TIME
                         MasterDb(appContext).mainTable()
-                        MasterDb(appContext).settingsTable()
+                        MasterDb(appContext).createSettingsTable()
+                        MasterDb(appContext).initSettingsTable()
 
                         //STARTS MAIN_ACTIVITY
                         startActivity(Intent("MainActivity").addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -402,7 +403,7 @@ class OpenSettingsUser(context: Context) : Fragment(R.layout.settings_users) {
 
     /*
 
-        FOR ANY OPERATION THAT MAKES AN UI CHANGE TO THIS FRAGMENT ON ANOTHER FRAGMENT , variable backToParentFragment SHOULD BE MADE TRUE!
+        FIXME: FOR ANY OPERATION THAT MAKES AN UI CHANGE TO THIS FRAGMENT ON ANOTHER FRAGMENT , variable backToParentFragment SHOULD BE MADE TRUE!
         // TODO: Da bind la cele scrise mai jos cu noua baza de date si server!
 
     */
@@ -422,30 +423,29 @@ class OpenSettingsUser(context: Context) : Fragment(R.layout.settings_users) {
         usernameOnFragment.text = sUsername
 
         val db = MasterDb(appContext)
+
         // take from DB the status of each switch below
-        val blockState = db.getBlockState(sUser)
+        val blockState = db.getUserBlockStatus(sUser)
         val blockSwitch: MaterialSwitch = view.findViewById(R.id.switchBlock)
-        if(blockState == 0) {
-            blockSwitch.isChecked = false
-        }else {
-            blockSwitch.isChecked = true
-        }
+        blockSwitch.isChecked = blockState != 0
 
-        val notifyState = db.getNotifyState(sUser)
+        val notifyState = db.getUserNotificationState(sUser)
         val notifySwitch: MaterialSwitch = view.findViewById(R.id.switchNotifications)
-        if(notifyState == 0) {
-            notifySwitch.isChecked = false
-        }else {
-            notifySwitch.isChecked = true
-        }
+        notifySwitch.isChecked = notifyState != 0
 
+        /**
+            FIXME: BOTH BLOCK&NOTIFICATION WILL HAVE 3 STATES
+                - 0 -> DEFAULT
+                - 1 -> SOFT BLOCK / MOMENT_NOTF_OFF
+                - 2 -> PERMANENT BLOCK / NOTIF_OFF
+        */
 
         blockSwitch.setOnCheckedChangeListener { _, isChecked ->
 
             if(isChecked) {
-                db.updateBlockState(sUser, 1)
-            }else {
-                db.updateBlockState(sUser, 0)
+                db.updateUserBlockState(sUser, 1)
+            } else {
+                db.updateUserBlockState(sUser, 0)
             }
 
         }
@@ -453,19 +453,19 @@ class OpenSettingsUser(context: Context) : Fragment(R.layout.settings_users) {
         notifySwitch.setOnCheckedChangeListener { _, isChecked ->
 
             if(isChecked) {
-                db.updateNotifyState(sUser , 1)
-            }else {
-                db.updateNotifyState(sUser , 0)
+                db.updateUserNotificationState(sUser , 1)
+            } else {
+                db.updateUserNotificationState(sUser , 0)
             }
 
         }
 
         removeFriend.setOnLongClickListener {
 
-            TODO("MAKE A NEW FRAGMENT FOR THIS YOU IDIOT")
-            // A fragment where the user decides whether to eliminate or not the friend.
+            // FIXME:
+                // A fragment where the user decides whether to eliminate or not the friend.
 
-            true
+            null
         }
 
         changeUsernameFriend.setOnClickListener {
@@ -486,7 +486,7 @@ class OpenSettingsUser(context: Context) : Fragment(R.layout.settings_users) {
         exportChat.setOnClickListener {
 
             // Todo: We will add a feature to read all chat history (only text)
-            // Todo: Here will be the first interaction with Android Files Stuff, I have to create a .TXT file and stored in Downloads/Documents (see)
+            // Todo: Here will be the first interaction with Android Files Stuff, I have to create a .TXT file and stored in Downloads/Documents (see) OR SHARE IT
 
         }
 

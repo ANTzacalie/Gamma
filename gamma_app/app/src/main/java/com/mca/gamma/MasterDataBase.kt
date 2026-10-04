@@ -192,6 +192,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
     override fun onCreate(db: SQLiteDatabase?) {}
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {}
 
+    // local user main table
     fun mainTable() {
 
         val db = writableDatabase
@@ -222,6 +223,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
         Log.d("TABLE USERS" , "TABLE CREATED FOR USER_ID: $userId")
         val createTableSql = """
             CREATE TABLE IF NOT EXISTS $userId (
+                id INTEGER PRIMARY KEY,
                 USER_EMAIL TEXT NOT NULL,
                 USER_MESSAGE TEXT NOT NULL,
                 USER_FILE_URI TEXT NOT NULL,
@@ -234,6 +236,47 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
         db.execSQL(createTableSql)
         db.close()
+
+    }
+
+    // creates application settings table
+    fun createSettingsTable() {
+        val db = writableDatabase
+
+        Log.d("TABLE SETTINGS", "SETTINGS TABLE CREATED")
+        val createTableSql = """
+            CREATE TABLE IF NOT EXISTS SETTINGS (
+                id INTEGER PRIMARY KEY,
+                AUTH INT NOT NULL
+                /* IN PROGRESS */
+            );
+        """
+
+        db.execSQL(createTableSql)
+        db.close()
+    }
+
+    fun initSettingsTable() {
+
+        val db = writableDatabase
+
+        try {
+
+            val values = ContentValues().apply {
+
+                put("AUTH" , 0)
+                /*  TODO  */
+
+            }
+
+            db.insert("main", null, values)
+            db.close()
+
+        } catch (e:Exception) {
+
+            Log.d("SETTINGS TABLE INSERT","ERROR: " + e.message); db.close()
+
+        }
 
     }
 
@@ -349,7 +392,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
     }
 
-    fun updateBlockMain(userEmail : String?, block: Int) {
+    fun updateUserBlockState(userEmail : String?, block: Int) {
 
         val db = writableDatabase
 
@@ -376,7 +419,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
     }
 
-    fun updateNotificationMain(userEmail : String?, notification: Int) {
+    fun updateUserNotificationState(userEmail : String?, notification: Int) {
 
         val db = writableDatabase
 
@@ -687,15 +730,16 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
     }
 
     @SuppressLint("Range")
-    fun getNotificationMain(userEmail: String): Any? {
+    fun getUserNotificationState(userEmail: String?): Any? {
 
         val db = readableDatabase
-
         val columns = arrayOf("NOTIFICATION")
+        val where = "EMAIL = ?"
+        val whereArgs = arrayOf(userEmail)
 
         try {
 
-            val cursor: Cursor = db.query("main", columns, null, null, null, null, null)
+            val cursor: Cursor = db.query("main", columns, where, whereArgs, null, null, null)
 
             cursor.use {
 
@@ -706,13 +750,14 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
                 }
 
             }
+
             cursor.close(); db.close()
 
             return null
 
         } catch (e:Exception) {
 
-            Log.d(" GET NOTIFICATION FROM MAIN " , "ERROR WITH EXCEPTION LOG: " + e.message)
+            Log.d(" GET NOTIFICATION_STATE FROM MAIN " , "ERROR WITH EXCEPTION LOG: " + e.message)
 
             return null
 
@@ -721,7 +766,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
     }
 
     @SuppressLint("Range")
-    fun getBlockMain(userEmail: String): Any? {
+    fun getUserBlockStatus(userEmail: String?): Any? {
 
         val db = readableDatabase
 
@@ -788,7 +833,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
     }
 
-    fun loadDynamicMessages() {
+    fun loadChatMessages() {
         // TODO: IMPLEMENT DINAMIC MESSAGE LOADING
     }
 

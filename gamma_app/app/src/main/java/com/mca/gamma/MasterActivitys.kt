@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowInsets
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -358,12 +359,10 @@ class UserActivity : AppCompatActivity() {
         window.statusBarColor = ContextCompat.getColor(this, R.color.black)
         window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
 
-
         // TODO:  IMPLEMENT MODIFICATION TO CARDS TO INCLUDE MEDIA SUPPORT
         //        MEDIA THAT IS UNABLE TO BE VIEWED ON SCREEN WILL BE TAG WITH A RED BALL IN RIGHT CORNER
         //        IF MEDIA SUPPORTED WILL BE TAG WITH GREEN BALL;
         //        THERE WILL BE A VIDEO_VIEW , YOUTUBE_VIEW AND AN IMAGE_VIEW
-
 
         val sendMessageButton: ImageButton = findViewById(R.id.sendMessage)
         val loadProfileIcon: ImageView = findViewById(R.id.cardImage)
@@ -409,7 +408,7 @@ class UserActivity : AppCompatActivity() {
         }
 
         // loads all chat messages
-        val messageArray = db.loadDynamicMessages()
+        val messageArray = db.loadChatMessages()
 
         if(messageArray.size > 0) {
 
@@ -555,7 +554,7 @@ class MainActivity: AppCompatActivity() {
 
         }; cardMainBoolean = true
 
-        // yes permission to the object Transmission to execute certain actions
+        // permission to the MasterService to execute certain actions
         permitObjMain = true
 
     }
@@ -660,7 +659,7 @@ class ConnActivity: AppCompatActivity() {
         val cardLinearLayout: LinearLayout = findViewById(R.id.cardLinearLayoutConn)
         val constraintLayout: ConstraintLayout = findViewById(R.id.connConstraintLayout)
 
-        // Dam Constraintlayout object, to work Live Friend Request
+        // Constraintlayout object, to work Live Friend Request
         Transmission.addConstraint(constraintLayout)
 
         // we add in the object when we enter into activity so we can display on the interface
