@@ -18,7 +18,7 @@ var serverAccessCode: String? = "" // the unique access code to the server, if t
 
 var localUserEmail: String? = "" // here we store the user's email, if the user wants to stock in memory with Keystore
 
-var localUsername: String? = "" // here we stock the usernam, and if the user wants to stock in memory with Keystore
+var localUsername: String? = "" // here we stock the username, and if the user wants to stock in memory with Keystore
 
 var localId: String? = "" // unique user of the user
 /////
@@ -54,14 +54,10 @@ var permitObjConn: Boolean = false // understand, so we can update the interface
 
 var permitObjUser: Boolean = false // users, so we can update the interface
 
-var permitActivityAfterLogin: Boolean = true // required at the first connection to the server (user), then required for ConnectivityBject so as not to intervene with Masteractivity
+var permitActivityAfterLogin: Boolean = true // required at the first connection to the server (user), then required for ConnectivityObject so as not to intervene with Master activity
 
 var permitObjInternetAcess: Boolean = false // Connectivity Object, this shows us if there is internet
 //##. Transmission obj
 
 
-// VERSION 2.50
-
-// TODO: REFA TOATE BUTOANELE DE GO_BACK , SEND ETC..  , FOLOSIM GOOGLE ICONS!
-// ALL INTERNAL CODE WILL BE REDONE , AS WELL AS WELL AS FOR SERVER CODE!
-// CHANGE OF METHOD , ALL SYNC WILL BE DONE ON SERVER , THIS MEANS THE SERVER WILL HAVE ALL THE CHAT_DATA + FIRENDS;
+// VERSION 2.55

@@ -11,8 +11,8 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 
-//updated with transmission object (from NK/11/2023 ==>>> to 10/10/2024)
-// ALL LOGIC INSIDE OBJECT , ONLY CONTROL HERE
+// TODO: IMPLEMENT THE SERVICE TO REPLACE THE LOGIC OF THE TRANSMISSION_OBJECT
+/** AND WITH THIS WE HAVE CONNECTION TO SERVER IN BACKGROUND AND IN_APP **/
 
 class TransmissionBackground: Service() {
 

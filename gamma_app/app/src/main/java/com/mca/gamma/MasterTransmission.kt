@@ -56,20 +56,7 @@ object Transmission : AppCompatActivity() {
     var socket: Socket = IO.socket(serverAddress , options)
 
     private var activityContext: WeakReference<Context>? = null
-    private var classLinearLayout: WeakReference<LinearLayout>? = null
-    private var classConstraintLayout: WeakReference<ConstraintLayout>? = null
-    private val channel = localUserEmail
 
-    private fun getLinearLayout(): LinearLayout? {
-
-        return classLinearLayout?.get()
-
-    }
-    private fun getConstraintLayout(): ConstraintLayout? {
-
-        return classConstraintLayout?.get()
-
-    }
     private fun getContext(): Context? {
 
         return activityContext?.get()
@@ -80,16 +67,7 @@ object Transmission : AppCompatActivity() {
         activityContext = WeakReference(context)
 
     }
-    fun addConstraint(constraintLayout: ConstraintLayout) {
 
-        classConstraintLayout = WeakReference(constraintLayout)
-
-    }
-    fun addLayout(linearLayout: LinearLayout) {
-
-        classLinearLayout = WeakReference(linearLayout)
-
-    }
     fun start() {
 
         socket.connect()
@@ -126,75 +104,14 @@ object Transmission : AppCompatActivity() {
 
         }
 
-    }
-
-    /*
-
-        socket.on("FILE_STREAM_RECEIVER") { args ->
-            val data = args[0] as JSONObject
-            val base64File = data.getString("someEncodedFile")
-            val fileMime = data.getString("fileMime")
-
-            Log.e("SOCKET_IO", "PACKAGE FROM USER RECEIVED")
-
-            val filePath: Uri? = decodeBase64AndSaveFile(base64File , fileMime , getContext()!!)
-            if(inActivity && allowUpdate) {
-
-                val imageView: ImageView? = getImageView()
-
-                if (imageView != null) {
-
-                    runOnUiThread { imageView.setImageURI(filePath) }
-
-                } else {
-
-                    Log.e("SOCKET_IO", "ImageView or filePath is null!")
-
-                }
-
-            }
-
-        }
+        /**
+         * FUTURE IMPLEMENTATIONS MAY ADD OTHER LISTENERS FOR ADVANCED LOGIC;
+         *
+         *
+         * **/
 
     }
 
-    // SENDING THE FILE TO ANOTHER DEVICE
-    fun sendFileTest(inputFile: Uri?, context: Context) {
-
-        val fileBytes: ByteArray? = readFileFromUri(inputFile!! , context)
-        val fileMime = context.contentResolver.getType(inputFile)
-
-        if(fileBytes != null) {
-
-            val base64File = Base64.encodeToString(fileBytes , Base64.DEFAULT)
-
-            val data = JSONObject().apply {
-
-                put("someEncodedFile" , base64File)
-                put("fileMime" , fileMime)
-
-            }
-
-            Log.d("SEND FILE" , "File was successfully sent! , file: $data")
-            socket.emit("file" , data)
-
-        }
-
-    }
-
-
-    */
-
-    fun sendAny(event: String , data: JSONObject) {
-        Log.d("SEND ANY:", event)
-
-        if(permitObjInternetAcess) {
-
-            socket.emit(event , data)
-
-        }
-
-    }
 
     fun sendRequest(toUser: String?, connCode: String) {
 
@@ -225,27 +142,7 @@ object Transmission : AppCompatActivity() {
 
     }
 
-    fun sendMessage(toUser: String?, connCode: String?, yourMessage: String?, friendId : String? , fileUri: Uri? , fileType: String?) {
-
-        val currentTime = Time().getCurrentTime()
-        val messageId = Random().genRandomCode(14)
-
-        val message = JSONObject().apply {
-
-
-
-        }
-
-        if(permitObjInternetAcess) {
-
-
-
-        }
-        else {
-
-
-
-        }
+    fun sendMessage() {
 
     }
 

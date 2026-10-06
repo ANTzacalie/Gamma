@@ -402,7 +402,6 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
 
                 put("BLOCK", block)
 
-
             }
 
             val selection = "EMAIL = ?"
@@ -800,7 +799,7 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
     }
 
     @SuppressLint("Range")
-    fun getStatusMain(userEmail: String): String? {
+    fun getStatusUser(userEmail: String): String? {
 
         val db = readableDatabase
 
@@ -834,7 +833,23 @@ class MasterDb(context: Context) : SQLiteOpenHelper(context,"user0backup.db", nu
     }
 
     fun loadChatMessages() {
-        // TODO: IMPLEMENT DINAMIC MESSAGE LOADING
+        // TODO: IMPLEMENT DYNAMIC MESSAGE LOADING
+    }
+
+    fun loadConnUsers() {
+        // TODO: IMPLEMENT USER_REQUESTS, maximum 30 days in db !
+    }
+
+    fun deleteConversation() {
+
+    }
+
+    fun archiveConversation() {
+
+    }
+
+    fun deArchiveConversation() {
+
     }
 
 }

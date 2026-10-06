@@ -248,7 +248,7 @@ class RegisterActivity : AppCompatActivity() {
                     // for cases when the input at the user is not in accordance with the server
                     if(inputUsername.length() <= 3) {
 
-                        Toast.makeText(this, "USERNAME TOO SHORT! , SHOULD BE BIGGER THAN 3 CHARACTERS", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "USERNAME TOO SHORT!, SHOULD BE BIGGER THAN 3 CHARACTERS", Toast.LENGTH_LONG).show()
 
                         // reopen the action of the user button
                         next.isEnabled = true
@@ -264,7 +264,7 @@ class RegisterActivity : AppCompatActivity() {
 
                     } else if(inputPassword.length() < 8) {
 
-                        Toast.makeText(this, "PASSWORD TOO SHORT! , SHOULD BE BIGGER THAN 7 CHARACTERS", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "PASSWORD TOO SHORT!, SHOULD BE BIGGER THAN 7 CHARACTERS", Toast.LENGTH_LONG).show()
 
                         // reopen the action of the user button
                         next.isEnabled = true
@@ -272,7 +272,7 @@ class RegisterActivity : AppCompatActivity() {
 
                     } else if(inputPassword.length() > 50) {
 
-                        Toast.makeText(this, "PASSWORD TOO LONG! , SHOULD BE LESSER THAN 50 CHARACTERS", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "PASSWORD TOO LONG!, SHOULD BE LESSER THAN 50 CHARACTERS", Toast.LENGTH_LONG).show()
 
                         // reopen the action of the user button
                         next.isEnabled = true
@@ -280,7 +280,7 @@ class RegisterActivity : AppCompatActivity() {
 
                     } else if('@' !in inputEmail.toString()) {
 
-                        Toast.makeText(this, "INCORRECT EMAIL , SHOULD CONTAIN CHARACTER '@'", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "INCORRECT EMAIL, SHOULD CONTAIN CHARACTER '@'", Toast.LENGTH_LONG).show()
 
                         // reopen the action of the user button
                         next.isEnabled = true
@@ -288,7 +288,7 @@ class RegisterActivity : AppCompatActivity() {
 
                     } else if(inputUsername.length() > 30) {
 
-                        Toast.makeText(this , "USERNAME TOO LONG , MUST BE UNDER 30 CHARACTERS" , Toast.LENGTH_LONG).show()
+                        Toast.makeText(this , "USERNAME TOO LONG, MUST BE UNDER 30 CHARACTERS" , Toast.LENGTH_LONG).show()
 
                         // reopen the action of the user button
                         next.isEnabled = true
@@ -370,13 +370,9 @@ class UserActivity : AppCompatActivity() {
         val userSettingsButton: LinearLayout = findViewById(R.id.userSettings)
         val inputText: EditText = findViewById(R.id.messageText)
         val usernameTextView: TextView = findViewById(R.id.usernameDisplayText)
-        val cardLinearLayout: LinearLayout = findViewById(R.id.cardsLayout)
 
         // the global variable that stores the user of the user with whom we communicate
         globalSpecificUser = sUser
-
-        // We add in the object of the transmission classlinearlayout to be able to update UI
-        Transmission.addLayout(cardLinearLayout)
 
         // allows the object to perform actions on UI
         permitObjUser = true
@@ -531,16 +527,6 @@ class MainActivity: AppCompatActivity() {
         // We check if the user is first connected to open the transmission!        
         userOnFirstConnect()
 
-        //cardLinearLayoutSiConstraintLayout
-        val cardLinearLayout: LinearLayout = findViewById(R.id.cardLinearLayoutMain)
-        val constraintLayout: ConstraintLayout = findViewById(R.id.constraintLayout)
-
-        // give the object of Constraint Layout, to work Live Friend ACCEPT
-        Transmission.addConstraint(constraintLayout)
-
-        // give the object Linearlayout
-        Transmission.addLayout(cardLinearLayout)
-
         // We open an instance of MasterDB
         val db = MasterDb(applicationContext)
 
@@ -654,16 +640,6 @@ class ConnActivity: AppCompatActivity() {
         //val intent1 = Intent("com.example.ACTION_AC6")
         val buttonA: Button = findViewById(R.id.sendConnRequest)
         val inputConnRequest: EditText = findViewById(R.id.inputConnRequest)
-
-        // Linearlayout and constraint layout for the whole class
-        val cardLinearLayout: LinearLayout = findViewById(R.id.cardLinearLayoutConn)
-        val constraintLayout: ConstraintLayout = findViewById(R.id.connConstraintLayout)
-
-        // Constraintlayout object, to work Live Friend Request
-        Transmission.addConstraint(constraintLayout)
-
-        // we add in the object when we enter into activity so we can display on the interface
-        Transmission.addLayout(cardLinearLayout)
 
         // we open a MasterDB instance
         val db = MasterDb(applicationContext)

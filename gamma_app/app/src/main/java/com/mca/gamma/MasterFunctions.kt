@@ -324,7 +324,7 @@ class UserActivityChild(): AppCompatActivity() {
         CardViews().sendMessageCard(finalText, Time().getCurrentTime(), linearLayout, context , fileUri , fileType)
 
         //Sending the message
-        Transmission.sendMessage(sUser, sUKey, finalText, sId , fileUri , fileType) //trimitem mesajul
+        Transmission.sendMessage(sUser, sUKey, finalText, sId , fileUri , fileType)
         Log.d("MESSAGE SENT", "MESSAGE: $finalText")
 
         // we delete the text from the box where we enter text
@@ -535,7 +535,7 @@ class CardViews(): AppCompatActivity() {
 
                 cardMainBoolean = false
 
-                // call a function so we can add buttonlayout more, than to put everything here
+                // call a function so we can add button layout more, than to put everything here
                 removeFromFriendsCard(dataVector[3], dataVector[0], activityLayout, buttonLayout, cardLayout , constraintLayout)
 
             }
@@ -776,7 +776,7 @@ class HasInternet() {
 
 }
 
-class Time { // Todo: We still have no timezone, we leave this as it is for the moment.
+class Time { // Todo: Still have no timezone, we leave this as it is for the moment.
 
     fun convertTS(messageTimeStamp: String): String {
 
@@ -796,52 +796,3 @@ class Time { // Todo: We still have no timezone, we leave this as it is for the 
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-//folosim asta doar pt developmentul local , un certificat unsigned , cand trecem la over the network folosim un certificat signed
-/*
-class InsecureHttpsClient() {
-
-    fun createInsecureOkHttpClient(): OkHttpClient {
-        Log.d("InsecureHttpsClient","OBJECT X509TrustManager")
-
-        val trustAllCertificates: X509TrustManager = @SuppressLint("CustomX509TrustManager")
-
-        object : X509TrustManager {
-
-            @SuppressLint("TrustAllX509TrustManager")
-            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-            }
-
-            @SuppressLint("TrustAllX509TrustManager")
-            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-            }
-
-            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-        }
-
-        // Install the all-trusting trust manager
-        val sslContext = SSLContext.getInstance("TLS").apply {
-            init(null, arrayOf<TrustManager>(trustAllCertificates), SecureRandom())
-        }
-
-        // Create an OkHttpClient that trusts all certificates
-        return OkHttpClient.Builder()
-            .sslSocketFactory(sslContext.socketFactory, trustAllCertificates)
-            .hostnameVerifier { _, _ -> true } // Accept all hostnames (not recommended for production)
-            .build()
-
-    }
-
-}
-*/
