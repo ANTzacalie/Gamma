@@ -5,450 +5,342 @@ const randomInt = require("crypto");
 const https = require("https");
 const express = require("express");
 const bodyParser = require("body-parser");
-const socketIO = require("socket.io")
+const socketIO = require("socket.io");
+const { boolean } = require("webidl-conversions");
 
-let readData = [null, null, null, null, null, null, null];
-const dbPath = "DataBaseSQLite.db"// DATA_BASE NAME AND LOCATION
+let db_ok = false;
+const dbPath = "DataBaseSQLite.db"
 const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE, (error) => { //creating the instance of the database 
 
     if (error) {
 
-        console.error('Error connecting to SQLite database:', error.message);
+        console.error('Error connecting to SQLite database:', error.message); db_ok = false;
         return;
 
     }
-    console.log('Connected to SQLite database');
+    console.log('Connected to SQLite database'); db_ok = true;
 
 });
 
-const readQuery = "SELECT PRIVATE_PATH , CERTIFICATE_PATH , CHAIN_PATH, EMAIL , PASSWORD, HOSTNAME, PORT FROM INPUT WHERE Id = 1";
-try {
+/*
 
-    db.all(readQuery, (error, result) => {
+    --- IMPLEMENT LOGIC TO READ CONFIG.SRV
 
-        if (error) {
+*/
 
-            console.error("Error reading values from database table INPUT" + error.message);
-
-        } else {
-
-            console.log("All data form table INPUT have been read");
-
-            readData[0] = result[0].PRIVATE_PATH;
-            readData[1] = result[0].CERTIFICATE_PATH;
-            readData[2] = result[0].CHAIN_PATH;
-            readData[3] = result[0].EMAIL;
-            readData[4] = result[0].PASSWORD;
-            readData[5] = result[0].HOSTNAME;
-            readData[6] = result[0].PORT;
+let PORT = ;
+let HOSTNAME = ;
+let PASSWORD_SRV = ;/**/
+let EMAIL = ;
+let EMAIL_KEY = ;
+let CHAIN_PATH = ;
+let CERTIFICATE_PATH = ;
+let PRIVATE_KEY_PATH = ;
 
 
-            const app = express() //Here we initialize the application with Express for HTTPS Request
-            app.use(bodyParser.json()); //JSON int
+if (db_ok) {
 
-            const server = https.createServer({
+    console.error("DATABASE IS OPERATIONAL, STARTING SERVER..........");
 
-                key: fs.readFileSync(readData[0]),
-                cert: fs.readFileSync(readData[1]),
-                ca: fs.readFileSync(readData[2]),
+} else {
 
-            }, app);
+    console.log("DATABASE ONLINE, SERVER IS STARTING TS: " + currentDate.toLocaleString());
 
-            const startSocketIo = socketIO(server , { maxHttpBufferSize: 1e8 } ); //Here we initialize Socketio and specify maxHttpBuffer to 100mb
-            const currentDate = new Date(); //Creating an instance of the day/month/year
+    const app = express() //Here we initialize the application with Express for HTTPS Request
+    app.use(bodyParser.json()); //JSON int
 
-            function emailSender(email, code) {
+    const server = https.createServer({
 
-                //Create a transporter with your SMTP configuration
-                const transporter = nodemailer.createTransport({
+        key: fs.readFileSync(readData[0]),
+        cert: fs.readFileSync(readData[1]),
+        ca: fs.readFileSync(readData[2]),
 
-                    service: 'gmail',
-                    auth: {
+    }, app);
 
-                        user: readData[3],
-                        pass: readData[4]
+    const startSocketIo = socketIO(server , { maxHttpBufferSize: 1e8 } ); //Here we initialize Socketio and specify maxHttpBuffer to 100mb
+    const currentDate = new Date(); //Creating an instance of the day/month/year
 
-                    }
+    function emailSender(email, code) {
 
-                });
+        //Create a transporter with your SMTP configuration
+        const transporter = nodemailer.createTransport({
 
-                // Compose the email
-                const mailOptions = {
+            service: 'gmail',
+            auth: {
 
-                    from: readData[3],
-                    to: email,
-                    subject: 'Verification code',
-                    text: 'Your code is:' + code
-
-                };
-
-                // Send the email
-                transporter.sendMail(mailOptions, function (error, info) {
-
-                    if (error) {
-
-                        console.error('Error sending email:', error);
-
-                    } else {
-
-                        console.log('Email sent:', info.response);
-
-                    }
-
-                });
+                user: readData[3],
+                pass: readData[4]
 
             }
-            
-            // Random string generator
-            function codeGenerator(lenght) {
+        });    
 
-                const characters = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ0123456789';
+        // Compose the email
+        const mailOptions = {
 
-                let password = '';
+            from: readData[3],
+            to: email,
+            subject: 'Verification code',
+            text: 'Your code is:' + code
 
-                for (let i = 0; i < lenght; i++) {
+        };
 
-                    const randomIndex = randomInt.randomInt(characters.length);
-                    password += characters.charAt(randomIndex);
+        // Send the email
+        transporter.sendMail(mailOptions, function (error, info) {
 
-                }
+            if (error) {
 
-                console.log("Code generated is: " + password);
+                console.error('Error sending email:', error);
 
-                return password;
+            } else {
 
-            }
-            
-            //Finds the email in db
-            function emailFinder(email, callback) {
-
-                
-            }
-
-            //Registers account into db
-            function registerAccount(email, password, username) {
-
-            
+                console.log('Email sent:', info.response);
 
             }
-            
-            //Login
-            function authEmail(email, password, callback) {
+        });
 
-                
+    }
 
-            }
+ // Random string generator
+function codeGenerator(lenght) {
 
-            //Get socketId from db
-            function getSocketId(username, callback) {
+    const characters = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ0123456789';
 
-                query = "SELECT SOCKET_ID FROM USERS WHERE USERNAME = ?";
+    let password = '';
 
-                try {
+    for (let i = 0; i < lenght; i++) {
 
-                    db.all(query, [email], function (error, result) {
+        const randomIndex = randomInt.randomInt(characters.length);
+        password += characters.charAt(randomIndex);
 
-                        if (error) {
+    }
 
-                            console.log("GET SOCKET ID: " + error.message);
-                            callback(false);
+    return password;
 
-                        }
-                        else {
+}
+ 
+//Finds the email in db
+function emailFinder(email, callback) {
 
-                            if (result.length > 0) {
-
-                                console.log("GET SOCKET ID , RETRIVED ID: " + result[0].SOCKET_ID);
-                                callback(result[0].SOCKET_ID);
-
-                            }
-                            else {
-
-                                console.log("GET SOCKET ID: NO ID PRESENT");
-                                callback(false);
-
-                            }
-
-                        }
-
-                    });
-
-                } catch (error) {
-
-                    console.log(error);
-                    callback(false)
-
-                }
-
-            }
-
-            //Registers the socketId to db
-            function registerSocketId(username, socketId) {
-
-                let query = "UPDATE USERS SET SOCKET_ID = ? WHERE USERNAME = ?";
-
-                try {
-
-                    db.run(query, [socketId, email], function (error) {
-
-                        if (error) {
-
-                            console.log("ADD USERS SOCKET_ID FAILED FOR USER: " + email + " WITH ERROR " + error.message);
-
-                        }
-                        else {
-
-                            console.log("ADD USER SOCKET_ID WORKING!");
-
-                        }
-
-                    });
-
-                } catch (error) {
-
-                    console.log(error);
-
-                }
-
-            }
-
-            //Modify password field for a specific email
-            function changePassword(email, newPassword, callback) {
-
-                let query = "UPDATE USERS SET PASSWORD = ? WHERE EMAIL = ?";
-
-
-
-
-            }
-
-            //Modify Username field for a specific email
-            function changeUsername(email, newUsername, callback) {
-
-                
-
-            }
-
-            //Verify the input code with the one in db
-            function verifyCode(email, code, callback) {
-
-                const currentTime = currentDate.toLocaleString();
-
-
-            }
-
-            //Register code for a specific email
-            function registerCode(email, callback) {
-
-               
-
-            }
-
-            //The main method of auth after login 
-            function authServer(secure_code, email, callback) { // TODO: ADD USER PASSWORD AS A DOUBLE MESURE
-
-                
-
-            }
-
-            //FUN 1 -->> LOGIN
-            app.post('/login', async (request, response) => {
-
-                const { email, password } = request.body;
-
-                
-
-            });
-
-            // FUN4 -->> SIGN UP
-            app.post('/signup', async (request, response) => {
-
-                const { username, email, password } = request.body;
-
-                
-
-            });
-
-            // FUN5 -->> CODE_VERIFICATION
-            app.post('/codeVerify', async (request, response) => {
-
-                const { code, email } = request.body;
-
-                
-
-            });
-
-            // FUN7 -->> CHANGE_USERNAME
-            app.post('/changeUsername', async (request, response) => {
-
-                const { email, newUsername, serverAccessCode } = request.body;
-
-               
-
-            });
-
-            // FUN8 -->> CHANGE_PASSWORD 1
-            app.post('/changePassword', async (request, response) => {
-
-                const { email } = request.body;
-
-                
-
-            });
-
-            // FUN -->> CHANGE_PASSWORD 2
-            app.post('/changePassword2', async (request, response) => {
-
-                const { email, newPassword, code } = request.body;
-
-                
-
-            });
-
-            startSocketIo.on('connection', (ioRoute) => {
-
-                // REGISTERS THE SOCKET ID
-                ioRoute.on("on_connect", (data) => {
-
-                    const { senderEmail, serverAccessCode } = data;
-                    const socket_id = ioRoute.id
-
-                    authServer(serverAccessCode, senderEmail, (valid) => {
-
-                        if (valid) {
-
-                            console.log("ON_CONNECT:: USER " + senderEmail + " HAS CONNECTED TO SERVER AT TIME: " /* ADD TIME HERE */)
-                            registerSocketId(senderEmail, socket_id);
-
-                        }
-
-                    });
-
-                });
-
-                ioRoute.on("on_disconnect", (data) => {
-
-                    const { senderEmail, serverAccessCode } = data;
-
-                    authServer(serverAccessCode, senderEmail, (valid) => {
-
-                        if (valid) {
-
-                            console.log("ON_DISCONNECT:: USER " + senderEmail + " HAS DISCONNECTED FROM THE SERVER AT TIME: " /* ADD TIME HERE */)
-
-                        } else {
-
-                            console.log("ON_DISCONNECT:: USER " + senderEmail + " WARNING , UNAUTORIZED USER DETECTED! , TIME: " /* ADD TIME HERE */)
-
-                        }
-
-                    });
-
-                });
-
-               
-                /*
-                // Static function, only for testing purposes
-                ioRoute.on("file", (data) => {
-                    
-                    const { someEncodedFile , fileMime } = data;
-                    
-                    console.log("FILE STREAM USED!");
-
-                    getSocketId("antoniomihalceacatalin43@gmail.com" , (resultId) => {
-
-                        if(resultId) {
-
-                            // There is no need for decoding as there is no use of the file inside the server
-                            ioRoute.volatile.to(resultId).emit("FILE_STREAM_RECEIVER", { "someEncodedFile": someEncodedFile , "fileMime": fileMime })
-                            console.log("FILE STREAM: A file was sent to user(static)")
-
-                        }
-
-                    })
-
-                });
-                */
-
-
-
-            });
-
-
-
-            // SERVER START LOGIC
-            const port = parseInt(readData[6]); //portul care il vom folosi;
-            const hostname = readData[5]; //numele domeniului(daca avem unul) sau adresa IPV4;
-
-            server.listen(port, hostname, () => {
-
-                console.log("SERVER IS RUNNING on https://" + hostname + ":" + port);
-
-            });
-
-
-        }
-
-    });
-
-} catch (error) {
-
-    console.error("Error reading values from database table INPUT" + error.message);
 
 }
 
+//Registers account into db
+function registerAccount(email, password, username) {
 
+ 
+
+}
+ 
+//Login
+function authEmail(email, password, callback) {
+
+
+
+}
+
+//Get socketId from db
+function getSocketId(email, callback) {
+
+    query = "SELECT SOCKET_ID FROM USERS WHERE EMAIL = ?";
+
+    try {
+
+        db.all(query, [email], function (error, result) {
+
+            if (error) {
+
+                console.log("ERROR RETURNED BY DATABASE ON FUNCTION getSocketID with error:" + error.message);
+                callback(false);
+
+            }
+            else {
+
+                if (result.length > 0) {
+
+                    console.log("SOCKET_ID FOUND, RETRIVED ID: " + result[0].SOCKET_ID);
+                    callback(result[0].SOCKET_ID);
+
+                }
+                else {
+
+                    console.log("UNABLE TO GET SOCKET_ID FROM DATABASE, NONE HAS BEEN FOUND, REPORT ON USER: " + email);
+                    callback(false);
+
+                }
+
+            }  
+
+        });
+
+    } catch (error) {
+
+        console.log(error);
+        callback(false)
+
+    }
+
+}
+
+//Registers the socketId to db
+function registerSocketId(email, socketId) {
+
+    let query = "UPDATE USERS SET SOCKET_ID = ? WHERE EMAIL = ?";
+
+    try {
+
+        db.run(query, [socketId, email], function (error) {
+
+            if (error) {
+
+                console.log("SOCKET_ID NOT BOUND FOR USER: " + email + " WITH ERROR " + error.message);
+
+            }
+            else {
+
+                console.log("SOCKET_ID BOUND TO USER");
+
+            }
+
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+}
+
+//Modify password field for a specific email
+function changePassword(email, newPassword, callback) {
+
+    let query = "UPDATE USERS SET PASSWORD = ? WHERE EMAIL = ?";
+
+}
+
+//Modify Username field for a specific email
+function changeUsername(email, newUsername, callback) {}
+
+//Verify the input code with the one in db
+function verifyCode(email, code, callback) {
+
+    const currentTime = currentDate.toLocaleString();
+
+}
+
+//Register code for a specific email
+function registerCode(email, callback) {}
+
+//The main method of auth after login 
+function authServer(secure_code, email, callback) {}
+
+//FUN 1 -->> LOGIN
+app.post('/login', async (request, response) => {
+
+    const { email, password } = request.body;
+
+});
+
+// FUN4 -->> SIGN UP
+app.post('/signup', async (request, response) => {
+
+    const { username, email, password } = request.body;
+
+});
+
+// FUN5 -->> CODE_VERIFICATION
+app.post('/codeVerify', async (request, response) => {
+
+    const { code, email } = request.body;
+
+});
+
+// FUN7 -->> CHANGE_USERNAME
+app.post('/changeUsername', async (request, response) => {
+
+    const { email, newUsername, serverAccessCode } = request.body;
+ 
+});
+
+// FUN8 -->> CHANGE_PASSWORD 1
+app.post('/changePassword', async (request, response) => {
+
+    const { email } = request.body;
+
+});
+
+// FUN -->> CHANGE_PASSWORD 2
+app.post('/changePassword2', async (request, response) => {
+
+    const { email, newPassword, code } = request.body;
+
+});
+
+startSocketIo.on('connection', (ioRoute) => {
+
+    // REGISTERS THE SOCKET ID
+    ioRoute.on("on_connect", (data) => {
+
+        const { senderEmail, serverAccessCode } = data;
+        const socket_id = ioRoute.id
+
+        authServer(serverAccessCode, senderEmail, (valid) => {
+
+            if (valid) {
+
+                console.log("ON_CONNECT:: USER " + senderEmail + " HAS CONNECTED TO SERVER AT TIME: " + currentDate.toLocaleString());
+                registerSocketId(senderEmail, socket_id);
+
+            }
+
+        });
+
+    });
+
+    ioRoute.on("on_disconnect", (data) => {
+
+        const { senderEmail, serverAccessCode } = data;
+
+        authServer(serverAccessCode, senderEmail, (valid) => {
+
+            if (valid) {
+
+                console.log("ON_DISCONNECT:: USER " + senderEmail + " HAS DISCONNECTED FROM THE SERVER AT TIME: " + currentDate.toLocaleString());
+
+            } else {
+
+                console.log("ON_DISCONNECT:: USER " + senderEmail + " WARNING , UNAUTORIZED USER DETECTED! , TIME: " + currentDate.toLocaleString());
+
+            }
+
+        });
+
+    });
+
+    // SERVER START LOGIC
+    const port = parseInt(PORT); //portul care il vom folosi;
+    const hostname = HOSTNAME; //numele domeniului(daca avem unul) sau adresa IPV4;
+
+    server.listen(port, hostname, () => {
+
+        console.log("SERVER IS RUNNING on https://" + hostname + ":" + port);
+
+    });
+
+});
+
+}
+
+//
 // TODO: 
-// -  
-// - 
-// - 
-// - 
+//
+// -REDO ALL FUNCTIONS USING ASYNC
+// -ALL USERS HAVE A TEMPORAL SPACE OF UP TO 2GB AT A TIME
+// -ALL TRANSACTIONS BETWEEN USERS CANNOT TAKE MORE THAN 3HOURS IN TRANSFER
+// -SERVER WILL BE STARTED VERY SIMPLY, ALL PARAMS BE STORED IN CONFIG.SRV
+//
 
 
 // Server Ver: 1.73A
 // dev: M.C.A
 
-let storageActivityA = ["statusMessage", "statusRequest", "request_received", "request_accepted_received", "request_denied_received", "arb_standby", "request_block_received"];
-let storageActivityB = ["imOnline", "stb_messages", "stb_request", "stb_arb_standby", "stb_arb"];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*DACA UITI JS DB OPERATIONS , IMBECILULE !
-
-
-pentru SELECT se foloseste db.all(query , etc , function(error , result){
-        result este returnat ca array , nu ca vector(un fel de vector) , asa ca citim cu result[0].numeColoana(NUMELE COLOANEI DIN SELECT)
-});
-
-pentru orice query de tipul WRITE DB se foloseste db.run(query , etc(informatie si ce din query cu ?), function(error){
-        //asta nu inseamna ca nu poate avea callback !!!
-});
-
-*/  
