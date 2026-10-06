@@ -398,14 +398,14 @@ try {
 }
 
 
-// Todo: .Net App finished, binded to the server too.
+// TODO: 
+// -  
+// - 
+// - 
+// - 
 
 
-
-// Server Ver: 1.72A
-// todo: add maximum users, so admin can set a maximum
-// todo: add email sender chnage , so we can send emails on other type of EMIAL domains
-
+// Server Ver: 1.73A
 // dev: M.C.A
 
 let storageActivityA = ["statusMessage", "statusRequest", "request_received", "request_accepted_received", "request_denied_received", "arb_standby", "request_block_received"];
